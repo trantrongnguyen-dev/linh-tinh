@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:padding="@dimen/padding_layout_root"
+        android:baselineAligned="false"
+        tools:context="fga.bu22.android.home.MainActivity">
+
+    <HorizontalScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:id="@+id/horizon"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="7">
+
+            <ImageView
+                android:id="@+id/img_prev"
+                android:layout_width="@dimen/btn_prev_next"
+                android:layout_height="@dimen/btn_prev_next"
+                android:layout_alignParentLeft="true"
+                android:contentDescription="@string/btn_prev"
+                app:srcCompat="@drawable/ic_prew" />
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cv_period"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/img_prev"
+                android:layout_marginLeft="@dimen/margin_btn_prev"
+                android:layout_marginRight="@dimen/margin_btn_prev"
+                android:background="#fff">
+
+                <TextView
+                    android:id="@+id/txt_period"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="5dp"
+                    android:text="9-15/4/2018"
+                    android:textColor="@android:color/black"/>
+            </android.support.v7.widget.CardView>
+
+            <ImageView
+                android:id="@+id/img_next"
+                android:layout_width="@dimen/btn_prev_next"
+                android:layout_height="@dimen/btn_prev_next"
+                android:layout_toRightOf="@id/cv_period"
+                app:srcCompat="@drawable/ic_next" />
+
+            <ImageView
+                android:id="@+id/img_recycle_bin"
+                android:layout_width="@dimen/btn_prev_next"
+                android:layout_height="@dimen/btn_prev_next"
+                android:layout_above="@+id/grid_time_table"
+                android:layout_marginStart="78dp"
+                android:layout_toEndOf="@+id/img_next"
+                app:srcCompat="@drawable/ic_recycle_bin" />
+
+            <GridView
+                android:id="@+id/grid_time_table"
+                android:layout_width="400dp"
+                android:layout_height="200dp"
+                android:layout_below="@id/cv_period"
+                android:layout_marginTop="@dimen/margin_btn_prev"
+                android:layout_marginRight="10dp"
+                android:numColumns="7" />
+        </RelativeLayout>
+</HorizontalScrollView>
+<ScrollView
+    android:layout_width="wrap_content"
+    android:layout_below="@id/horizon"
+    android:layout_height="wrap_content">
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="3">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/cv_list_lesson"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="36dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/txt_list_lesson_name"
+                android:textColor="@color/txt_green"
+                android:textSize="@dimen/txt_list_lesson"
+                android:textStyle="bold" />
+        </android.support.v7.widget.CardView>
+
+        <ImageView
+            android:id="@+id/img_add_lesson"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignBaseline="@id/cv_list_lesson"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="32dp"
+            app:srcCompat="@drawable/ic_add" />
+
+        <GridView
+            android:id="@+id/grid_list_lesson"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:layout_below="@id/img_add_lesson"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="@dimen/margin_btn_prev"
+            android:numColumns="3" />
+
+        <Button
+            android:id="@+id/btn_edit_lesson_name"
+            style="@style/ButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/grid_list_lesson"
+            android:layout_marginTop="@dimen/margin_align_layout"
+            android:text="@string/btn_edit_lesson_name" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btn_edit_lesson_name"
+            android:layout_marginTop="@dimen/margin_btn_prev"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/btn_ok"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/margin_btn_prev"
+                android:layout_weight="1"
+                android:text="@string/btn_ok" />
+
+            <Button
+                android:id="@+id/btn_cancel"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/btn_cancel" />
+        </LinearLayout>
+    </RelativeLayout>
+</ScrollView>
+</RelativeLayout>

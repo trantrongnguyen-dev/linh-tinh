@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="padding_layout_root">16dp</dimen>
+
+    <dimen name="item_lesson_text_size">12sp</dimen>
+    <dimen name="txt_list_lesson">16dp</dimen>
+    <dimen name="txt_edit_lesson_name">32sp</dimen>
+    <dimen name="txt_button">9dp</dimen>
+    <dimen name="edt_lesson_name">300sp</dimen>
+    <dimen name="edt_lesson_name_la">150dp</dimen>
+    <dimen name="name_lesson">20sp</dimen>
+
+    <dimen name="btn_prev_next">30dp</dimen>
+    <dimen name="btn_recycle_bin">36dp</dimen>
+
+    <dimen name="margin_btn_prev">12dp</dimen>
+    <dimen name="margin_align_layout">20dp</dimen>
+    <dimen name="margin_medium">10dp</dimen>
+</resources>

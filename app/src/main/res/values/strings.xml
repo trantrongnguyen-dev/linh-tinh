@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">TrainningAndroid</string>
+    <string name="btn_prev">prev</string>
+
+    <string name="txt_list_lesson_name">List lesson name</string>
+
+    <string name="btn_edit_lesson_name">Edit Lesson Name</string>
+    <string name="btn_ok">Xác nhận</string>
+    <string name="btn_cancel">Hủy</string>
+</resources>

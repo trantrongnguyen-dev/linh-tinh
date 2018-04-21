@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#80e27e</color>
+    <color name="colorPrimaryDark">#087f23</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="timetable_header_text">#ffffff</color>
+    <color name="timetable_header_text_disabled">#8b8b8b</color>
+    <color name="timetable_header_bg">#388E3C</color>
+    <color name="timetable_header_bg_disabled">#575b80</color>
+    <color name="timetable_header_border">#d9d9d9</color>
+    <color name="timetable_header_border_disabled">#3e4371</color>
+    <color name="timetable_cell_border_disabled">#696969</color>
+    <color name="timetable_cell_border">#d9d9d9</color>
+
+    <color name="button_bg">@color/timetable_header_bg</color>
+    <color name="button_bg_disabled">#1B5E20</color>
+    <color name="button_border">@color/timetable_header_bg</color>
+    <color name="button_border_disabled">#1B5E20</color>
+    <color name="button_bg_pressed">#2E7D32</color>
+
+    <color name="txt_green">#2E7D32</color>
+    <color name="textIcons">#FFFFFF</color>
+</resources>
