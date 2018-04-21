@@ -8,11 +8,13 @@
     android:padding="@dimen/padding_layout_root"
     android:baselineAligned="false"
     tools:context="fga.bu22.android.home.view.MainActivity">
+
 <HorizontalScrollView
     android:layout_width="wrap_content"
     android:id="@+id/horizon"
     android:layout_height="wrap_content">
     <RelativeLayout
+        android:id="@+id/relative_time_table"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="7">

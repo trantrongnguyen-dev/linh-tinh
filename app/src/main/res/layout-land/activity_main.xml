@@ -10,6 +10,7 @@
     tools:context="fga.bu22.android.home.view.MainActivity">
 
     <RelativeLayout
+        android:id="@+id/relative_time_table"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="7">
@@ -52,7 +53,7 @@
             android:layout_width="@dimen/btn_prev_next"
             android:layout_height="@dimen/btn_prev_next"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="@dimen/margin_btn_prev"
+            android:layout_marginRight="@dimen/margin_align_layout"
             app:srcCompat="@drawable/ic_recycle_bin"/>
 
         <GridView

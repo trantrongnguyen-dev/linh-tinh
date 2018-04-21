@@ -1,7 +1,5 @@
 package fga.bu22.android.models;
 
-import android.os.Bundle;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
@@ -59,14 +57,15 @@ public class TimeTableModel {
         mTimeTableList.set(timeTable.getPosition(), timeTable);
         mPropertyChangeSupport.firePropertyChange(EVENT_UPDATE_TIMETABLE, null, mTimeTableList);
     }
-    public boolean addLesson(Lesson lesson){
+
+    public boolean addLesson(Lesson lesson) {
         mLessonList.add(lesson);
         mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
         return true;
     }
 
     public void replaceItemTimeTable(TimeTable timeTable, int newPosition) {
-        mTimeTableList.set(newPosition, new TimeTable(timeTable.getLessonName(), 1, 1,newPosition));
+        mTimeTableList.set(newPosition, new TimeTable(timeTable.getLessonName(), 1, 1, newPosition));
         mTimeTableList.set(timeTable.getPosition(), new TimeTable());
         mPropertyChangeSupport.firePropertyChange(EVENT_REPLACE_ITEM_TIMETABLE, null, mTimeTableList);
     }

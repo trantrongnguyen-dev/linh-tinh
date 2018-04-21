@@ -1,7 +1,6 @@
 package fga.bu22.android.home.view;
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -20,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +33,6 @@ import java.util.List;
 
 import fga.bu22.android.R;
 import fga.bu22.android.database.DatabaseHelper;
-import fga.bu22.android.editlesson.EditLessonNameActivity;
 import fga.bu22.android.home.adapter.LessonAdapter;
 import fga.bu22.android.home.adapter.TimeTableAdapter;
 import fga.bu22.android.home.controller.EditTimeTableController;
@@ -43,10 +42,11 @@ import fga.bu22.android.models.TimeTableModel;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-
     public static final String OBJ_LOAD_DATA_TIME_TABLE = "EVENT_LOAD_DATA_TIME_TABLE";
     public static final String OBJ_LOAD_DATA_LESSON = "EVENT_LOAD_DATA_LESSON";
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    private RelativeLayout mRelativeTimeTable;
 
     private GridView mGridTimeTable;
     private GridView mGridLesson;
@@ -86,8 +86,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mDatabaseHelper = new DatabaseHelper(this);
-        initData();
+
+        initLessonData();
         initViews();
         registerViewListenner();
 
@@ -95,14 +95,16 @@ public class MainActivity extends AppCompatActivity {
         initController();
     }
 
-    private void initData() {
+    private void initLessonData() {
+        mDatabaseHelper = new DatabaseHelper(this);
+
         mLessonList.add(new Lesson("Toan"));
         mLessonList.add(new Lesson("van"));
         mLessonList.add(new Lesson("ly"));
         mLessonList.add(new Lesson("hoa"));
 
-        for (Lesson lesson : mLessonList){
-            if (!mDatabaseHelper.isExist(lesson)){
+        for (Lesson lesson : mLessonList) {
+            if (!mDatabaseHelper.isExist(lesson)) {
                 mDatabaseHelper.addLesson(lesson);
             }
         }
@@ -173,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         mBtnEditLessonName = findViewById(R.id.btn_edit_lesson_name);
         mBtnOk = findViewById(R.id.btn_ok);
         mBtnCancel = findViewById(R.id.btn_cancel);
+        mRelativeTimeTable = findViewById(R.id.relative_time_table);
 
         Calendar now = Calendar.getInstance();
         Date date = now.getTime();
@@ -180,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         String formattedDate = df.format(date);
         int week = now.get(Calendar.WEEK_OF_YEAR);
 
-        mTxtPeriod.setText("Tuan "+week +"-"+formattedDate);
+        mTxtPeriod.setText(week + "-" + formattedDate);
 
 
         mTimeTableAdapter = new TimeTableAdapter(this, mTimeTableList);
@@ -242,8 +245,27 @@ public class MainActivity extends AppCompatActivity {
         mBtnEditLessonName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), EditLessonNameActivity.class);
-                startActivity(intent);
+                if (mIsEditingLessonName) {
+                    mIsEditingLessonName = false;
+                    mGridTimeTable.setEnabled(true);
+                    mRelativeTimeTable.setAlpha(1f);
+                    mBtnEditLessonName.setText(getResources().getString(R.string.btn_edit_lesson_name));
+                    mBtnCancel.setEnabled(true);
+                    mBtnOk.setEnabled(true);
+                    mBtnOk.setAlpha(1f);
+                    mBtnCancel.setAlpha(1f);
+
+                } else {
+                    mIsEditingLessonName = true;
+                    mGridTimeTable.setEnabled(false);
+                    mRelativeTimeTable.setAlpha(0.4f);
+                    mBtnEditLessonName.setText(getResources().getString(R.string.btn_cancel_edit_lesson_name));
+                    mBtnCancel.setEnabled(false);
+                    mBtnOk.setEnabled(false);
+                    mBtnOk.setAlpha(0.4f);
+                    mBtnCancel.setAlpha(0.4f);
+
+                }
             }
         });
     }
@@ -252,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
         mBtnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    //to do something
+                //to do something
             }
         });
 
@@ -324,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
 //                                                    mController.sendMessage(msg);
 //                                                    mIsDragToDelete = true;
 //                                                    v.startAnimation(animZoomOut);
-                                                break;
+                                                    break;
                                                 default:
                                                     break;
                                             }

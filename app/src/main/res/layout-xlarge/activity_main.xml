@@ -8,7 +8,7 @@
         android:orientation="horizontal"
         android:padding="@dimen/padding_layout_root"
         android:baselineAligned="false"
-        tools:context="fga.bu22.android.home.MainActivity">
+        tools:context="fga.bu22.android.home.view.MainActivity">
 
     <HorizontalScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"

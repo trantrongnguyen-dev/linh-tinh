@@ -30,7 +30,7 @@ public class EditTimeTableController {
 
     private BaseState mCurrentState;
 
-    public EditTimeTableController(MainActivity activity){
+    public EditTimeTableController(MainActivity activity) {
         mMsgHander = new MsgHandler(this);
         mMainActivity = activity;
         mListState = initState();
@@ -45,13 +45,30 @@ public class EditTimeTableController {
         states.put(LOAD_DATA_STATE, new LoadDataState(this));
         states.put(DROP_STATE_ADD_NEW_ITEM, new DropState(this));
         states.put(DROP_STATE_REPLACE, new DropState(this));
-        states.put(SAVE_DATA_STATE_ADD_LESSON,new SaveDataState(this));
+        states.put(SAVE_DATA_STATE_ADD_LESSON, new SaveDataState(this));
 
         return states;
     }
 
-    public MainActivity getMainActivity(){
+    public MainActivity getMainActivity() {
         return mMainActivity;
+    }
+
+    public void sendMessage(Message msg) {
+        mMsgHander.sendMessage(msg);
+    }
+
+    private void handlerMsg(Message msg) {
+        transitionToState(msg.what);
+        mCurrentState.handleMsg(msg);
+    }
+
+    private void transitionToState(int key) {
+        mCurrentState = mListState.get(key);
+    }
+
+    public DatabaseHelper getDatabaseHelper() {
+        return mDatabaseHelper;
     }
 
     /**
@@ -70,22 +87,5 @@ public class EditTimeTableController {
         public void handleMessage(Message msg) {
             mController.handlerMsg(msg);
         }
-    }
-
-    public void sendMessage(Message msg){
-        mMsgHander.sendMessage(msg);
-    }
-
-    private void handlerMsg(Message msg) {
-        transitionToState(msg.what);
-        mCurrentState.handleMsg(msg);
-    }
-
-    private void transitionToState(int key) {
-        mCurrentState = mListState.get(key);
-    }
-
-    public DatabaseHelper getDatabaseHelper() {
-        return mDatabaseHelper;
     }
 }

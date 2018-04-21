@@ -2,20 +2,17 @@ package fga.bu22.android.database;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
 import fga.bu22.android.models.Lesson;
 import fga.bu22.android.models.TimeTable;
 import fga.bu22.android.models.TimeTableModel;
-import fga.bu22.android.util.Constant;
 
 /**
  * Created by CTC_TRAINING on 4/17/2018.
@@ -53,10 +50,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_LESSON);
         db.execSQL(CREATE_TIMETABLE);
-
-
     }
-
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
@@ -73,21 +67,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(LESSON_NAME, lesson.getName());
 
-
         // Trèn một dòng dữ liệu vào bảng.
         db.insert(LESSON_TABLE, null, values);
-
 
         // Đóng kết nối database.
         db.close();
     }
 
     public Lesson getLesson(String name) {
-
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(LESSON_TABLE, new String[] { LESSON_ID, LESSON_NAME }, LESSON_NAME + "=?",
-                new String[] { name }, null, null, null, null);
+        Cursor cursor = db.query(LESSON_TABLE, new String[]{LESSON_ID, LESSON_NAME}, LESSON_NAME + "=?",
+                new String[]{name}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
 
@@ -104,7 +95,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-
 
         // Duyệt trên con trỏ, và thêm vào danh sách.
         if (cursor.moveToFirst()) {
@@ -158,7 +148,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(LESSON_TABLE, LESSON_NAME + " = ?",
-                new String[] { lesson.getName()});
+                new String[]{lesson.getName()});
         db.close();
     }
 
@@ -230,7 +220,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         try {
             sqLiteDatabase.delete(TIMETABLE_TABLE, TIMETABLE_WEEK + "= ? AND"
-                    +TIMETABLE_YEAR + " =? ", new String[]{String.valueOf(timeTable.getWeek()),String.valueOf(timeTable.getYear())});
+                    + TIMETABLE_YEAR + " =? ", new String[]{String.valueOf(timeTable.getWeek()), String.valueOf(timeTable.getYear())});
         } catch (Exception e) {
             Log.d(TAG, "delete error: ");
             return false;
@@ -242,7 +232,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean isExist (Lesson lesson) {
+    public boolean isExist(Lesson lesson) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(LESSON_TABLE, new String[]{LESSON_ID,
