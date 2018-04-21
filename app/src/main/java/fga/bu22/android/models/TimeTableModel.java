@@ -2,6 +2,7 @@ package fga.bu22.android.models;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,6 +15,8 @@ public class TimeTableModel {
     public static final String EVENT_LOAD_TIMETABLE = "EVENT_LOAD_TIMETABLE";
     public static final String EVENT_UPDATE_TIMETABLE = "EVENT_UPDATE_TIMETABLE";
     public static final String EVENT_REPLACE_ITEM_TIMETABLE = "EVENT_REPLACE_ITEM_TIMETABLE";
+    public static final String EVENT_DELETE_ITEM_TIMETABLE = "EVENT_DELETE_ITEM_TIMETABLE";
+    public static final String EVENT_DELETE_LESSON = "EVENT_DELETE_LESSON";
 
     public static final String TIMETABLE = "TIMETABLE";
 
@@ -68,5 +71,32 @@ public class TimeTableModel {
         mTimeTableList.set(newPosition, new TimeTable(timeTable.getLessonName(), 1, 1, newPosition));
         mTimeTableList.set(timeTable.getPosition(), new TimeTable());
         mPropertyChangeSupport.firePropertyChange(EVENT_REPLACE_ITEM_TIMETABLE, null, mTimeTableList);
+    }
+
+    public void deleteItemTimeTable(TimeTable timeTable) {
+        mTimeTableList.set(timeTable.getPosition(), new TimeTable());
+        mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_ITEM_TIMETABLE, null, mTimeTableList);
+    }
+
+    public void deleteLesson(Lesson lesson) {
+        mLessonList.remove(lesson);
+
+        //Delete timeTable item have lesson
+        ArrayList<Integer> itemPosition = new ArrayList<>();
+        for (int i = 0; i < mTimeTableList.size(); i++) {
+            TimeTable timeTable = mTimeTableList.get(i);
+            if (timeTable.getLessonName() != null) {
+                if (timeTable.getLessonName().equals(lesson.getName())) {
+                    itemPosition.add(i);
+                }
+            }
+        }
+
+        for (Integer item : itemPosition) {
+            mTimeTableList.set(item, new TimeTable());
+        }
+
+        mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_ITEM_TIMETABLE, null, mTimeTableList);
+        mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_LESSON, null, mTimeTableList);
     }
 }

@@ -108,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
                 mDatabaseHelper.addLesson(lesson);
             }
         }
-
     }
 
     private void initController() {
@@ -159,6 +158,17 @@ public class MainActivity extends AppCompatActivity {
             case TimeTableModel.EVENT_REPLACE_ITEM_TIMETABLE:
                 mTimeTableAdapter = new TimeTableAdapter(MainActivity.this, (ArrayList<TimeTable>) propertyChangeEvent.getNewValue());
                 mGridTimeTable.setAdapter(mTimeTableAdapter);
+                break;
+            case TimeTableModel.EVENT_DELETE_ITEM_TIMETABLE:
+                mTimeTableAdapter = new TimeTableAdapter(MainActivity.this, (ArrayList<TimeTable>) propertyChangeEvent.getNewValue());
+                mGridTimeTable.setAdapter(mTimeTableAdapter);
+                break;
+            case TimeTableModel.EVENT_DELETE_LESSON:
+                mLessonList.clear();
+                mLessonList.addAll(mTimeTableModel.getLessonList());
+
+                mLessonAdapter.notifyDataSetChanged();
+                break;
             default:
                 break;
         }
@@ -230,7 +240,6 @@ public class MainActivity extends AppCompatActivity {
                         Message message = new Message();
                         message.what = EditTimeTableController.SAVE_DATA_STATE_ADD_LESSON;
                         message.obj = lesson;
-                        //  mController.transitionToState(MainController.KEY_STATE_EDIT_TIME_TABLE);
                         mEditTimeTableController.sendMessage(message);
 
                     }
@@ -322,7 +331,6 @@ public class MainActivity extends AppCompatActivity {
                                     super.onProvideShadowMetrics(shadowSize, shadowTouchPoint);
 
                                     // Drag listener for recycle bin
-
                                     mImgRecycleBin.setOnDragListener(new View.OnDragListener() {
                                         @Override
                                         public boolean onDrag(View v, DragEvent event) {
@@ -337,15 +345,13 @@ public class MainActivity extends AppCompatActivity {
                                                     v.startAnimation(mAnimZoomOut);
                                                     break;
                                                 case DragEvent.ACTION_DROP:
-//                                                    Message msg = new Message();
-//
-//                                                    msg.what = EventInfo.EVENT_DELETE_ITEM_TIMETABLE_UI;
-//                                                    msg.obj = mTimetableAdapter.getItem(curPosition);
-//
-//                                                    //  mController.transitionToState(MainController.KEY_STATE_EDIT_TIME_TABLE);
-//                                                    mController.sendMessage(msg);
-//                                                    mIsDragToDelete = true;
-//                                                    v.startAnimation(animZoomOut);
+                                                    Message msg = new Message();
+
+                                                    msg.what = EditTimeTableController.DROP_STATE_DELETE_ITEM;
+                                                    msg.obj = mTimeTableAdapter.getItem(curPosition);
+                                                    mEditTimeTableController.sendMessage(msg);
+                                                    mIsDragToDelete = true;
+                                                    v.startAnimation(mAnimZoomOut);
                                                     break;
                                                 default:
                                                     break;
@@ -451,6 +457,37 @@ public class MainActivity extends AppCompatActivity {
                                     if (mIsEditingLessonName || mGridTimeTable.getChildCount() < 36) {
                                         return;
                                     }
+
+                                    // Drag listener for recycle bin
+                                    mImgRecycleBin.setOnDragListener(new View.OnDragListener() {
+                                        @Override
+                                        public boolean onDrag(View v, DragEvent event) {
+                                            switch (event.getAction()) {
+                                                case DragEvent.ACTION_DRAG_ENTERED:
+                                                    v.startAnimation(mAnimZoomIn);
+                                                    mIsDragToDelete = true;
+                                                    break;
+                                                case DragEvent.ACTION_DRAG_EXITED:
+                                                    v.setBackgroundColor(Color.TRANSPARENT);
+                                                    mIsDragToDelete = false;
+                                                    v.startAnimation(mAnimZoomOut);
+                                                    break;
+                                                case DragEvent.ACTION_DROP:
+                                                    Message msg = new Message();
+
+                                                    msg.what = EditTimeTableController.DROP_STATE_DELETE_LESSON;
+                                                    msg.obj = mLessonAdapter.getItem(curPosition);
+                                                    mEditTimeTableController.sendMessage(msg);
+                                                    mIsDragToDelete = true;
+                                                    v.startAnimation(mAnimZoomOut);
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                            return true;
+                                        }
+                                    });
+
                                     for (int i = 0; i < 49; i++) {
                                         if (i > TimeTableAdapter.MAX_COLUMN && i % TimeTableAdapter.MAX_COLUMN != 0) {
                                             final int finalPositon = i;

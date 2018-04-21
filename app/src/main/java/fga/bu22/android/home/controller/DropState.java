@@ -2,7 +2,8 @@ package fga.bu22.android.home.controller;
 
 import android.os.Message;
 
-import fga.bu22.android.home.adapter.TimeTableAdapter;
+import java.util.List;
+
 import fga.bu22.android.models.Lesson;
 import fga.bu22.android.models.TimeTable;
 import fga.bu22.android.models.TimeTableModel;
@@ -38,6 +39,18 @@ public class DropState extends BaseState {
                     TimeTable timeTable = (TimeTable) msg.obj;
                     int newPosition = msg.arg1;
                     mTimeTableModel.replaceItemTimeTable(timeTable, newPosition);
+                }
+                break;
+            case EditTimeTableController.DROP_STATE_DELETE_ITEM:
+                if (msg.obj != null) {
+                    TimeTable timeTable = (TimeTable) msg.obj;
+                    mTimeTableModel.deleteItemTimeTable(timeTable);
+                }
+                break;
+            case EditTimeTableController.DROP_STATE_DELETE_LESSON:
+                if (msg.obj != null) {
+                    Lesson lesson = (Lesson) msg.obj;
+                    mTimeTableModel.deleteLesson(lesson);
                 }
                 break;
             default:
