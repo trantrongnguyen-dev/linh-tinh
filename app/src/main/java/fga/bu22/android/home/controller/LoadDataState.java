@@ -3,6 +3,7 @@ package fga.bu22.android.home.controller;
 import android.os.Message;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import fga.bu22.android.home.view.MainActivity;
 import fga.bu22.android.models.Lesson;
@@ -39,10 +40,7 @@ public class LoadDataState extends BaseState {
                     break;
                 case MainActivity.OBJ_LOAD_DATA_LESSON:
                     //TODO: load from database here
-                    ArrayList<Lesson> lessons = new ArrayList<>();
-                    for (int i = 0; i < 15; i++) {
-                        lessons.add(new Lesson("sub " + (i + 1)));
-                    }
+                    List<Lesson> lessons = mController.getDatabaseHelper().getAllLesson();
                     mTimeTableModel.setLessonList(lessons);
                     break;
                 default:

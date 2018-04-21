@@ -2,6 +2,7 @@ package fga.bu22.android.database;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -52,7 +53,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_LESSON);
         db.execSQL(CREATE_TIMETABLE);
+
+
     }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
@@ -87,7 +91,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor != null)
             cursor.moveToFirst();
 
-        Lesson lesson = new Lesson(cursor.getString(0));
+        Lesson lesson = new Lesson(cursor.getString(1));
         // return note
         return lesson;
     }
@@ -106,7 +110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 Lesson lesson = new Lesson();
-                lesson.setName(cursor.getString(0));
+                lesson.setName(cursor.getString(1));
 
 
                 // Thêm vào danh sách.
@@ -238,5 +242,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return true;
     }
 
+    public boolean isExist (Lesson lesson) {
+        SQLiteDatabase db = this.getReadableDatabase();
 
+        Cursor cursor = db.query(LESSON_TABLE, new String[]{LESSON_ID,
+                        LESSON_NAME}, LESSON_NAME + "=?",
+                new String[]{lesson.getName()}, null, null, null, null);
+        if (cursor.getCount() <= 0) {
+            return false;
+        }
+        return true;
+    }
 }

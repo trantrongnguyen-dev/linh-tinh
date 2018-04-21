@@ -59,6 +59,11 @@ public class TimeTableModel {
         mTimeTableList.set(timeTable.getPosition(), timeTable);
         mPropertyChangeSupport.firePropertyChange(EVENT_UPDATE_TIMETABLE, null, mTimeTableList);
     }
+    public boolean addLesson(Lesson lesson){
+        mLessonList.add(lesson);
+        mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
+        return true;
+    }
 
     public void replaceItemTimeTable(TimeTable timeTable, int newPosition) {
         mTimeTableList.set(newPosition, new TimeTable(timeTable.getLessonName(), 1, 1,newPosition));

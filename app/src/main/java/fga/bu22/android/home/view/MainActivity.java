@@ -1,19 +1,23 @@
 package fga.bu22.android.home.view;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.DragEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -21,10 +25,14 @@ import android.widget.Toast;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import fga.bu22.android.R;
+import fga.bu22.android.database.DatabaseHelper;
 import fga.bu22.android.editlesson.EditLessonNameActivity;
 import fga.bu22.android.home.adapter.LessonAdapter;
 import fga.bu22.android.home.adapter.TimeTableAdapter;
@@ -50,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView mImgPrev;
     private ImageView mImgNext;
+
     private TextView mTxtPeriod;
     private ImageView mImgRecycleBin;
 
@@ -61,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     private Animation mAnimZoomIn, mAnimZoomOut;
 
     private EditTimeTableController mEditTimeTableController;
+
+    private DatabaseHelper mDatabaseHelper;
 
     private List<TimeTable> mTimeTableList = new ArrayList<>();
     private List<Lesson> mLessonList = new ArrayList<>();
@@ -75,12 +86,27 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mDatabaseHelper = new DatabaseHelper(this);
+        initData();
         initViews();
         registerViewListenner();
 
         initModel();
         initController();
+    }
+
+    private void initData() {
+        mLessonList.add(new Lesson("Toan"));
+        mLessonList.add(new Lesson("van"));
+        mLessonList.add(new Lesson("ly"));
+        mLessonList.add(new Lesson("hoa"));
+
+        for (Lesson lesson : mLessonList){
+            if (!mDatabaseHelper.isExist(lesson)){
+                mDatabaseHelper.addLesson(lesson);
+            }
+        }
+
     }
 
     private void initController() {
@@ -148,6 +174,15 @@ public class MainActivity extends AppCompatActivity {
         mBtnOk = findViewById(R.id.btn_ok);
         mBtnCancel = findViewById(R.id.btn_cancel);
 
+        Calendar now = Calendar.getInstance();
+        Date date = now.getTime();
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        String formattedDate = df.format(date);
+        int week = now.get(Calendar.WEEK_OF_YEAR);
+
+        mTxtPeriod.setText("Tuan "+week +"-"+formattedDate);
+
+
         mTimeTableAdapter = new TimeTableAdapter(this, mTimeTableList);
         if (mGridTimeTable != null) {
             Toast.makeText(this, "asg", Toast.LENGTH_SHORT).show();
@@ -169,6 +204,38 @@ public class MainActivity extends AppCompatActivity {
         initBtnOkListener();
         initBtnCancelListener();
         initBtnEditLessonName();
+        initImgAddLessonListener();
+    }
+
+    private void initImgAddLessonListener() {
+        mImgAddLesson.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                LayoutInflater inflater = MainActivity.this.getLayoutInflater();
+                final View dialogView = inflater.inflate(R.layout.dialog_add_lesson, null);
+
+                final EditText edtLessonName = dialogView.findViewById(R.id.edtLessonName);
+
+                dialogBuilder.setView(dialogView);
+
+                dialogBuilder.setTitle("Add lesson");
+                dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        String name = edtLessonName.getText().toString();
+                        Lesson lesson = new Lesson(name);
+                        Message message = new Message();
+                        message.what = EditTimeTableController.SAVE_DATA_STATE_ADD_LESSON;
+                        message.obj = lesson;
+                        //  mController.transitionToState(MainController.KEY_STATE_EDIT_TIME_TABLE);
+                        mEditTimeTableController.sendMessage(message);
+
+                    }
+                });
+                AlertDialog b = dialogBuilder.create();
+                b.show();
+            }
+        });
     }
 
     private void initBtnEditLessonName() {
@@ -257,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
 //                                                    mController.sendMessage(msg);
 //                                                    mIsDragToDelete = true;
 //                                                    v.startAnimation(animZoomOut);
-                                                    break;
+                                                break;
                                                 default:
                                                     break;
                                             }

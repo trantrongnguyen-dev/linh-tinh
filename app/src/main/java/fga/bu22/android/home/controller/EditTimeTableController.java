@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.SparseArray;
 
+import fga.bu22.android.database.DatabaseHelper;
 import fga.bu22.android.home.view.MainActivity;
 
 /**
@@ -17,8 +18,11 @@ public class EditTimeTableController {
     public static final int LOAD_DATA_STATE = 1;
     public static final int DROP_STATE_ADD_NEW_ITEM = 2;
     public static final int DROP_STATE_REPLACE = 3;
+    public static final int SAVE_DATA_STATE_ADD_LESSON = 4;
 
     private MainActivity mMainActivity;
+
+    private DatabaseHelper mDatabaseHelper;
 
     private SparseArray<BaseState> mListState;
 
@@ -31,6 +35,8 @@ public class EditTimeTableController {
         mMainActivity = activity;
         mListState = initState();
 
+        mDatabaseHelper = new DatabaseHelper(activity);
+
         mCurrentState = mListState.get(LOAD_DATA_STATE);
     }
 
@@ -39,6 +45,7 @@ public class EditTimeTableController {
         states.put(LOAD_DATA_STATE, new LoadDataState(this));
         states.put(DROP_STATE_ADD_NEW_ITEM, new DropState(this));
         states.put(DROP_STATE_REPLACE, new DropState(this));
+        states.put(SAVE_DATA_STATE_ADD_LESSON,new SaveDataState(this));
 
         return states;
     }
@@ -76,5 +83,9 @@ public class EditTimeTableController {
 
     private void transitionToState(int key) {
         mCurrentState = mListState.get(key);
+    }
+
+    public DatabaseHelper getDatabaseHelper() {
+        return mDatabaseHelper;
     }
 }
