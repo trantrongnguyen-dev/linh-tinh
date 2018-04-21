@@ -21,6 +21,7 @@ import fga.bu22.android.util.Constant;
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+    //nguyen nguyehn nencrnguyen69
     public static final String DATABASE_NAME = "Timetable_database";
     public static final String TIMETABLE_TABLE = "tbl_Timetable";
     public static final String TIMETABLE_ID = "timetableID";
