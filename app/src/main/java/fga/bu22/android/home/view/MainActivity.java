@@ -31,11 +31,13 @@ import android.widget.Toast;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import fga.bu22.android.R;
 import fga.bu22.android.database.DatabaseHelper;
@@ -58,16 +60,21 @@ public class MainActivity extends AppCompatActivity {
     private static final String SHARED_PREFERENCES_WEEK_OF_YEAR = "SHARED_PREFERENCES_WEEK_OF_YEAR";
     private static final String SAVE_PREFERENCE_WEEK = "SAVE_PREFERENCE_WEEK";
     private static final String SAVE_PREFERENCE_YEAR = "SAVE_PREFERENCE_YEAR";
+    private int year, month, day;
+
+    private RelativeLayout mRelativeTimeTable;
+
+    private GridView mGridTimeTable;
+    private GridView mGridLesson;
+
+    private LessonAdapter mLessonAdapter;
+    private TimeTableAdapter mTimeTableAdapter;
+
+    private TimeTableModel mTimeTableModel;
 
     TextView dateStartTv;
     TextView dateEndTv;
-    private int year, month, day;
-    private RelativeLayout mRelativeTimeTable;
-    private GridView mGridTimeTable;
-    private GridView mGridLesson;
-    private LessonAdapter mLessonAdapter;
-    private TimeTableAdapter mTimeTableAdapter;
-    private TimeTableModel mTimeTableModel;
+
     private ImageView mImgPrev;
     private ImageView mImgNext;
 
@@ -89,44 +96,6 @@ public class MainActivity extends AppCompatActivity {
     private List<Lesson> mLessonList = new ArrayList<>();
     private boolean mIsEditingLessonName = false;
     private boolean mIsDragToDelete = false;
-    private DatePickerDialog.OnDateSetListener myDateListener = new
-            DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePicker arg0,
-                                      int arg1, int arg2, int arg3) {
-                    // TODO Auto-generated method stub
-                    // arg1 = year
-                    // arg2 = month
-                    // arg3 = day
-                    dateStartTv.setText(new StringBuilder().append(arg1).append("/")
-                            .append(arg2 + 1).append("/").append(arg3));
-                }
-            };
-    private DatePickerDialog.OnDateSetListener myDateListener1 = new
-            DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePicker arg0,
-                                      int arg1, int arg2, int arg3) {
-                    // TODO Auto-generated method stub
-                    // arg1 = year
-                    // arg2 = month
-                    // arg3 = day
-                    dateEndTv.setText(new StringBuilder().append(arg1).append("/")
-                            .append(arg2 + 1).append("/").append(arg3));
-                }
-            };
-
-    public int getWeek() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
-        int week = sharedPreferences.getInt(SAVE_PREFERENCE_WEEK, -1);
-        return week;
-    }
-
-    public int getYear() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
-        int year = sharedPreferences.getInt(SAVE_PREFERENCE_YEAR, -1);
-        return year;
-    }
 
     public TimeTableModel getTimeTableModel() {
         return mTimeTableModel;
@@ -137,32 +106,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initLessonData();
         initViews();
         initModel();
         registerViewListenner();
 
-
         initController();
     }
 
-    private void initLessonData() {
-        mDatabaseHelper = new DatabaseHelper(this);
-
-        mLessonList.add(new Lesson("Toan"));
-        mLessonList.add(new Lesson("van"));
-        mLessonList.add(new Lesson("ly"));
-        mLessonList.add(new Lesson("hoa"));
-
-        for (Lesson lesson : mLessonList) {
-            if (!mDatabaseHelper.isExist(lesson)) {
-                mDatabaseHelper.addLesson(lesson);
-            }
-        }
-    }
 
     private void initController() {
         mEditTimeTableController = new EditTimeTableController(this);
+
+        if(isFirstLauncher()){
+            Calendar now = Calendar.getInstance();
+            Date date = now.getTime();
+            int week = now.get(Calendar.WEEK_OF_YEAR);
+            int years = now.get(Calendar.YEAR);
+            saveWeekAndYear(week, years);
+        }
 
         //Load data lesson
         Message message = new Message();
@@ -186,6 +147,18 @@ public class MainActivity extends AppCompatActivity {
                 onUpdateModel(propertyChangeEvent);
             }
         });
+    }
+
+    public int getWeek() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
+        int week = sharedPreferences.getInt(SAVE_PREFERENCE_WEEK, -1);
+        return week;
+    }
+
+    public int getYear() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
+        int year = sharedPreferences.getInt(SAVE_PREFERENCE_YEAR, -1);
+        return year;
     }
 
     private void onUpdateModel(PropertyChangeEvent propertyChangeEvent) {
@@ -604,7 +577,7 @@ public class MainActivity extends AppCompatActivity {
                                                             break;
                                                         case DragEvent.ACTION_DROP:
                                                             Log.d(TAG, "onDrag: ACTION_DROp");
-                                                            showDialogRegister(curPosition, finalPositon);
+                                                            showDialogRegister(curPosition,finalPositon);
                                                             break;
                                                         default:
                                                             break;
@@ -637,7 +610,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showDialogRegister(final int cur, final int finall) {
+    private void showDialogRegister(final int cur, final int finall){
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
         LayoutInflater inflater = MainActivity.this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.dialog_register, null);
@@ -649,10 +622,18 @@ public class MainActivity extends AppCompatActivity {
 
         dialogBuilder.setView(dialogView);
 
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+
+        year = calendar.get(Calendar.YEAR);
+        month = calendar.get(Calendar.MONTH);
+        day = calendar.get(Calendar.DAY_OF_MONTH);
+
         dateStartImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, myDateListener, year, month, day);
+                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,myDateListener,year,month,day);
                 dialog.show();
 
             }
@@ -661,7 +642,7 @@ public class MainActivity extends AppCompatActivity {
         dateEndImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, myDateListener1, year, month, day);
+                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,myDateListener1,year,month,day);
                 dialog.show();
             }
         });
@@ -682,6 +663,27 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog b = dialogBuilder.create();
         b.show();
     }
+
+    private DatePickerDialog.OnDateSetListener myDateListener = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      int arg1, int arg2, int arg3) {
+
+                    dateStartTv.setText(new StringBuilder().append(arg1).append("/")
+                            .append(arg2+1).append("/").append(arg3));
+                }
+            };
+    private DatePickerDialog.OnDateSetListener myDateListener1 = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      int arg1, int arg2, int arg3) {
+
+                    dateEndTv.setText(new StringBuilder().append(arg1).append("/")
+                            .append(arg2+1).append("/").append(arg3));
+                }
+            };
 
     private void saveWeekAndYear(int week, int year) {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);

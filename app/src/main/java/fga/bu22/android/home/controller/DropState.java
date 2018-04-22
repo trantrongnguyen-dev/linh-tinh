@@ -24,13 +24,15 @@ public class DropState extends BaseState {
     @Override
     public void handleMsg(Message msg) {
         super.handleMsg(msg);
+        int week = mController.getMainActivity().getWeek();
+        int year = mController.getMainActivity().getYear();
         switch (msg.what) {
             case EditTimeTableController.DROP_STATE_ADD_NEW_ITEM:
                 if (msg.obj != null) {
                     if (msg.obj instanceof Lesson) {
                         Lesson lesson = (Lesson) msg.obj;
                         int postion = msg.arg1;
-                        mTimeTableModel.updateTimeTable(new TimeTable(lesson.getName(), 1, 1, postion));
+                        mTimeTableModel.updateTimeTable(new TimeTable(lesson.getName(), week, year, postion));
                     }
                 }
                 break;
@@ -38,7 +40,7 @@ public class DropState extends BaseState {
                 if (msg.obj != null) {
                     TimeTable timeTable = (TimeTable) msg.obj;
                     int newPosition = msg.arg1;
-                    mTimeTableModel.replaceItemTimeTable(timeTable, newPosition);
+                    mTimeTableModel.replaceItemTimeTable(timeTable, newPosition, week, year);
                 }
                 break;
             case EditTimeTableController.DROP_STATE_DELETE_ITEM:

@@ -20,6 +20,7 @@ import fga.bu22.android.models.TimeTable;
 public class DatabaseHelper extends SQLiteOpenHelper {
     //nguyen nguyehn nencrnguyen69
     public static final String DATABASE_NAME = "Timetable_database";
+    public static final int DATABASE_VERSON = 4;
     public static final String TIMETABLE_TABLE = "tbl_Timetable";
     public static final String TIMETABLE_ID = "timetableID";
     public static final String TIMETABLE_WEEK = "timetableWeek";
@@ -33,15 +34,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     public static final String CREATE_LESSON = "CREATE TABLE  " + LESSON_TABLE + " ( " + LESSON_ID + " INTEGER PRIMARY KEY , " + LESSON_NAME + " TEXT " + ")";
-    public static final String CREATE_TIMETABLE = "CREATE TABLE  " + TIMETABLE_TABLE + " ( " + TIMETABLE_ID + " INTEGER PRIMARY KEY , " + "" + LESSON_NAME + " TEXT , "
-            + TIMETABLE_POSITION + " INTEGER ," + TIMETABLE_WEEK + " INTEGER ," + TIMETABLE_YEAR + "INTEGER" + ")";
+    public static final String CREATE_TIMETABLE = "CREATE TABLE  " + TIMETABLE_TABLE + " ( " + TIMETABLE_ID + " INTEGER PRIMARY KEY , "  + LESSON_NAME + " TEXT , "
+            + TIMETABLE_POSITION + " INTEGER , " + TIMETABLE_WEEK + " INTEGER , " + TIMETABLE_YEAR + "INTEGER " + ")";
 
 
     public static final String TAG = DatabaseHelper.class.getSimpleName();
     private Context mContext;
 
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, 1);
+        super(context, DATABASE_NAME, null, DATABASE_VERSON);
         this.mContext = context;
     }
 
@@ -49,13 +50,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_LESSON);
         db.execSQL(CREATE_TIMETABLE);
+        Log.d(TAG, "onCreate: "+DATABASE_VERSON);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
+        db.execSQL("DROP TABLE IF EXISTS " + LESSON_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + TIMETABLE_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + TIMETABLE_TABLE);
-
+        Log.d(TAG, "onUpgrade: "+DATABASE_VERSON);
         onCreate(db);
     }
 
@@ -135,6 +137,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // Đóng kết nối database.
         db.close();
+    }
+
+    public List<TimeTable> getAllTimeTableByWeek(int week, int year) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        List<TimeTable> timeTableList = new ArrayList<>();
+        Cursor cursor = db.query(TIMETABLE_TABLE,
+                new String[]{TIMETABLE_ID, LESSON_NAME, TIMETABLE_POSITION, TIMETABLE_WEEK,TIMETABLE_YEAR},
+                TIMETABLE_WEEK + "=? AND " + TIMETABLE_YEAR + " =? ",
+                new String[]{String.valueOf(week)}, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            do {
+                TimeTable timeTable = new TimeTable();
+                timeTable.setLessonName(cursor.getString(1));
+                timeTable.setPosition(Integer.parseInt(cursor.getString(2)));
+                timeTable.setWeek(Integer.parseInt(cursor.getString(3)));
+                timeTable.setYear(Integer.parseInt(cursor.getString(4)));
+
+                // Thêm vào danh sách.
+                timeTableList.add(timeTable);
+            } while (cursor.moveToNext());
+        }
+        return timeTableList;
     }
 
     public List<TimeTable> getAllTimeTable() {

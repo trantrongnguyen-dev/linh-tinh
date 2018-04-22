@@ -82,8 +82,8 @@ public class TimeTableModel implements Serializable {
         return true;
     }
 
-    public void replaceItemTimeTable(TimeTable timeTable, int newPosition) {
-        mTimeTableList.set(newPosition, new TimeTable(timeTable.getLessonName(), 1, 1, newPosition));
+    public void replaceItemTimeTable(TimeTable timeTable, int newPosition, int week, int year) {
+        mTimeTableList.set(newPosition, new TimeTable(timeTable.getLessonName(), week, year, newPosition));
         mTimeTableList.set(timeTable.getPosition(), new TimeTable());
         mPropertyChangeSupport.firePropertyChange(EVENT_REPLACE_ITEM_TIMETABLE, null, mTimeTableList);
     }
