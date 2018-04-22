@@ -1,10 +1,12 @@
 package fga.bu22.android.models;
 
+import java.io.Serializable;
+
 /**
  * Created by CTC_TRAINING on 4/17/2018.
  */
 
-public class Lesson {
+public class Lesson implements Serializable {
 
     private String name;
 

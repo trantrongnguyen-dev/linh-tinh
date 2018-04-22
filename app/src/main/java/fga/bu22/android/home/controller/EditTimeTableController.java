@@ -19,8 +19,9 @@ public class EditTimeTableController {
     public static final int DROP_STATE_ADD_NEW_ITEM = 2;
     public static final int DROP_STATE_REPLACE = 3;
     public static final int SAVE_DATA_STATE_ADD_LESSON = 4;
-    public static final int DROP_STATE_DELETE_ITEM = 5;
-    public static final int DROP_STATE_DELETE_LESSON = 6;
+    public static final int SAVE_DATA_STATE_REPLACE_LESSON = 5;
+    public static final int DROP_STATE_DELETE_ITEM = 6;
+    public static final int DROP_STATE_DELETE_LESSON = 7;
 
     private MainActivity mMainActivity;
 
@@ -50,6 +51,7 @@ public class EditTimeTableController {
         states.put(SAVE_DATA_STATE_ADD_LESSON, new SaveDataState(this));
         states.put(DROP_STATE_DELETE_ITEM, new DropState(this));
         states.put(DROP_STATE_DELETE_LESSON, new DropState(this));
+        states.put(SAVE_DATA_STATE_REPLACE_LESSON, new SaveDataState(this));
         return states;
     }
 

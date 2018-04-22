@@ -1,6 +1,7 @@
 package fga.bu22.android.home.view;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,6 +36,7 @@ import java.util.List;
 
 import fga.bu22.android.R;
 import fga.bu22.android.database.DatabaseHelper;
+import fga.bu22.android.editlesson.EditLessonNameActivity;
 import fga.bu22.android.home.adapter.LessonAdapter;
 import fga.bu22.android.home.adapter.TimeTableAdapter;
 import fga.bu22.android.home.controller.EditTimeTableController;
@@ -44,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String OBJ_LOAD_DATA_TIME_TABLE = "EVENT_LOAD_DATA_TIME_TABLE";
     public static final String OBJ_LOAD_DATA_LESSON = "EVENT_LOAD_DATA_LESSON";
+    public static final String INTENT_LESSON_NAME = "INTENT_LESSON_NAME";
+    public static final String INTENT_LESSON_LIST = "INTENT_LESSON_LIST";
+
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private RelativeLayout mRelativeTimeTable;
@@ -218,6 +225,45 @@ public class MainActivity extends AppCompatActivity {
         initBtnCancelListener();
         initBtnEditLessonName();
         initImgAddLessonListener();
+        initGridLessonClickListenner();
+    }
+
+    private void initGridLessonClickListenner() {
+        mGridLesson.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if (!mIsEditingLessonName) {
+                    return;
+                }
+
+                Intent intent = new Intent(MainActivity.this, EditLessonNameActivity.class);
+                intent.putExtra(INTENT_LESSON_NAME, mTimeTableModel.getLessonList().get(i).getName());
+                intent.putExtra(INTENT_LESSON_LIST, mTimeTableModel);
+
+                startActivityForResult(intent, EditLessonNameActivity.CODE_EDIT_LESON_NAME_ACTIVITY);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case EditLessonNameActivity.CODE_EDIT_LESON_NAME_ACTIVITY:
+                if (data != null) {
+                    String oldLessonName = data.getStringExtra(EditLessonNameActivity.EXTRA_OLD_LESSON_NAME);
+                    String newLessonName = data.getStringExtra(EditLessonNameActivity.EXTRA_NEW_LESSON_NAME);
+
+                    ArrayList<String> listName = new ArrayList<>();
+                    listName.add(oldLessonName);
+                    listName.add(newLessonName);
+
+                    Message msg = new Message();
+                    msg.what = EditTimeTableController.SAVE_DATA_STATE_REPLACE_LESSON;
+                    msg.obj = listName;
+                    mEditTimeTableController.sendMessage(msg);
+                }
+        }
     }
 
     private void initImgAddLessonListener() {

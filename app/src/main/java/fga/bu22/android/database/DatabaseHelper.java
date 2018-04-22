@@ -162,7 +162,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(TIMETABLE_WEEK, timeTable.getWeek());
         values.put(TIMETABLE_YEAR, timeTable.getYear());
 
-
         // Trèn một dòng dữ liệu vào bảng.
         db.insert(TIMETABLE_TABLE, null, values);
 

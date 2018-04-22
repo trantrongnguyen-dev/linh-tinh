@@ -2,6 +2,7 @@ package fga.bu22.android.models;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
  * Created by CTC_TRAINING on 4/17/2018.
  */
 
-public class TimeTableModel {
+public class TimeTableModel implements Serializable {
 
     public static final String EVENT_LOAD_LESSON_LIST = "EVENT_LOAD_LESSON_LIST";
     public static final String EVENT_LOAD_TIMETABLE = "EVENT_LOAD_TIMETABLE";
@@ -97,6 +98,25 @@ public class TimeTableModel {
         }
 
         mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_ITEM_TIMETABLE, null, mTimeTableList);
-        mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_LESSON, null, mTimeTableList);
+        mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_LESSON, null, mLessonList);
+    }
+
+    public void replaceLessonName(String oldName, String newName) {
+        for (Lesson lesson : mLessonList) {
+            if (lesson.getName().equals(oldName)) {
+                lesson.setName(newName);
+            }
+        }
+
+        for (TimeTable timeTable : mTimeTableList) {
+            if (timeTable.getLessonName() != null) {
+                if (timeTable.getLessonName().equals(oldName)) {
+                    timeTable.setLessonName(newName);
+                }
+            }
+        }
+
+        mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_ITEM_TIMETABLE, null, mTimeTableList);
+        mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_LESSON, null, mLessonList);
     }
 }

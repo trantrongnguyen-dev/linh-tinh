@@ -4,6 +4,7 @@ package fga.bu22.android.home.controller;
 import android.os.Message;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import fga.bu22.android.models.Lesson;
@@ -34,6 +35,12 @@ public class SaveDataState extends BaseState {
                 }
                 List<Lesson> lessons = mController.getDatabaseHelper().getAllLesson();
                 mTimeTableModel.setLessonList(lessons);
+                break;
+            case EditTimeTableController.SAVE_DATA_STATE_REPLACE_LESSON:
+                ArrayList<String> listName = (ArrayList<String>) msg.obj;
+                if (listName != null) {
+                    mTimeTableModel.replaceLessonName(listName.get(0), listName.get(1));
+                }
                 break;
             default:
                 break;
