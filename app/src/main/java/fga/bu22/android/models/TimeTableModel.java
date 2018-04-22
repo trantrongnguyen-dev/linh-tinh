@@ -1,7 +1,5 @@
 package fga.bu22.android.models;
 
-import android.widget.Toast;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
@@ -67,16 +65,16 @@ public class TimeTableModel implements Serializable {
 
     public boolean addLesson(Lesson lesson) {
         boolean check = false;
-        for (int i = 0; i<mLessonList.size();i++){
-            if (!lesson.getName().equals(mLessonList.get(i).getName())){
+        for (int i = 0; i < mLessonList.size(); i++) {
+            if (!lesson.getName().equals(mLessonList.get(i).getName())) {
                 check = true;
             } else {
                 check = false;
             }
         }
-        if (check){
+        if (check) {
             mLessonList.add(lesson);
-        }else {
+        } else {
             mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
             return false;
         }

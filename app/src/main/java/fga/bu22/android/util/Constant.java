@@ -5,9 +5,6 @@ package fga.bu22.android.util;
  */
 
 public class Constant {
-    public static String[] WEEKDAY = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-
     public static final String ROW_HEADER_PREFIX = "Lesson";
-
-
+    public static String[] WEEKDAY = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 }

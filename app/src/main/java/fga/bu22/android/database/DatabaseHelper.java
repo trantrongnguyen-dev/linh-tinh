@@ -7,13 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
 import fga.bu22.android.models.Lesson;
 import fga.bu22.android.models.TimeTable;
-import fga.bu22.android.models.TimeTableModel;
 
 /**
  * Created by CTC_TRAINING on 4/17/2018.

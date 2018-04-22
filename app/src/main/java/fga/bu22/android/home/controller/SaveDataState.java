@@ -29,7 +29,7 @@ public class SaveDataState extends BaseState {
         switch (msg.what) {
             case EditTimeTableController.SAVE_DATA_STATE_ADD_LESSON:
                 Lesson lesson = (Lesson) msg.obj;
-                if (mTimeTableModel.addLesson(lesson)){
+                if (mTimeTableModel.addLesson(lesson)) {
                     Toast.makeText(mController.getMainActivity().getApplicationContext(), "Add success", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(mController.getMainActivity().getApplicationContext(), "You can't not add new Lesson. Please check again!", Toast.LENGTH_SHORT).show();
@@ -41,34 +41,44 @@ public class SaveDataState extends BaseState {
                     mTimeTableModel.replaceLessonName(listName.get(0), listName.get(1));
                 }
                 break;
-             case EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB:
-                 List<TimeTable> timeTableList = mController.getMainActivity().getTimeTableModel().getTimeTableList();
-                 for (TimeTable timeTable : timeTableList){
-                     if (mController.getDatabaseHelper().isExistTimeTable(timeTable)) {
-                         mController.getDatabaseHelper().updateTimeTable(timeTable);
-                     } else {
-                         mController.getDatabaseHelper().addTimeTable(timeTable);
-                     }
-                 }
-                 break;
+            case EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB:
+                List<TimeTable> timeTableList = mController.getMainActivity().getTimeTableModel().getTimeTableList();
+                for (TimeTable timeTable : timeTableList) {
+                    if (mController.getDatabaseHelper().isExistTimeTable(timeTable)) {
+                        mController.getDatabaseHelper().updateTimeTable(timeTable);
+                    } else {
+                        mController.getDatabaseHelper().addTimeTable(timeTable);
+                    }
+                }
+                break;
             default:
                 break;
         }
     }
+
+    private boolean checkExist(Lesson lesson, List<Lesson> listLesson) {
+        for (Lesson ls : listLesson) {
+            if (lesson.getName().equals(ls.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class UpdateTimetableTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
             List<Lesson> lessonList = mController.getMainActivity().getTimeTableModel().getLessonList();
 
-            for (Lesson lesson1 : lessonList){
-                if (!mController.getDatabaseHelper().isExist(lesson1)){
+            for (Lesson lesson1 : lessonList) {
+                if (!mController.getDatabaseHelper().isExist(lesson1)) {
                     mController.getDatabaseHelper().addLesson(lesson1);
                 }
             }
 
             List<Lesson> lessonListDB = mController.getDatabaseHelper().getAllLesson();
-            for (Lesson lessonDB :lessonListDB){
-                if (!checkExist(lessonDB,lessonList)){
+            for (Lesson lessonDB : lessonListDB) {
+                if (!checkExist(lessonDB, lessonList)) {
                     mController.getDatabaseHelper().deleteLesson(lessonDB);
                 }
             }
@@ -82,7 +92,6 @@ public class SaveDataState extends BaseState {
         }
     }
 
-
     private class UpdateLessonTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
@@ -95,15 +104,6 @@ public class SaveDataState extends BaseState {
             super.onPostExecute(aVoid);
             mController.getMainActivity().getTimeTableModel().updateAllToDB();
         }
-    }
-
-    private boolean checkExist(Lesson lesson,List<Lesson> listLesson){
-        for (Lesson ls : listLesson){
-            if (lesson.getName().equals(ls.getName())){
-                return true;
-            }
-        }
-        return false;
     }
 
 }

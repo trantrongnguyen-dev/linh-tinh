@@ -1,8 +1,10 @@
 package fga.bu22.android.home.view;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -29,7 +31,6 @@ import android.widget.Toast;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,22 +55,19 @@ public class MainActivity extends AppCompatActivity {
     public static final String INTENT_LESSON_LIST = "INTENT_LESSON_LIST";
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    private int year, month, day;
-
-    private RelativeLayout mRelativeTimeTable;
-
-    private GridView mGridTimeTable;
-    private GridView mGridLesson;
-
-    private LessonAdapter mLessonAdapter;
-    private TimeTableAdapter mTimeTableAdapter;
-
-    private TimeTableModel mTimeTableModel;
+    private static final String SHARED_PREFERENCES_WEEK_OF_YEAR = "SHARED_PREFERENCES_WEEK_OF_YEAR";
+    private static final String SAVE_PREFERENCE_WEEK = "SAVE_PREFERENCE_WEEK";
+    private static final String SAVE_PREFERENCE_YEAR = "SAVE_PREFERENCE_YEAR";
 
     TextView dateStartTv;
     TextView dateEndTv;
-
+    private int year, month, day;
+    private RelativeLayout mRelativeTimeTable;
+    private GridView mGridTimeTable;
+    private GridView mGridLesson;
+    private LessonAdapter mLessonAdapter;
+    private TimeTableAdapter mTimeTableAdapter;
+    private TimeTableModel mTimeTableModel;
     private ImageView mImgPrev;
     private ImageView mImgNext;
 
@@ -91,6 +89,44 @@ public class MainActivity extends AppCompatActivity {
     private List<Lesson> mLessonList = new ArrayList<>();
     private boolean mIsEditingLessonName = false;
     private boolean mIsDragToDelete = false;
+    private DatePickerDialog.OnDateSetListener myDateListener = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      int arg1, int arg2, int arg3) {
+                    // TODO Auto-generated method stub
+                    // arg1 = year
+                    // arg2 = month
+                    // arg3 = day
+                    dateStartTv.setText(new StringBuilder().append(arg1).append("/")
+                            .append(arg2 + 1).append("/").append(arg3));
+                }
+            };
+    private DatePickerDialog.OnDateSetListener myDateListener1 = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      int arg1, int arg2, int arg3) {
+                    // TODO Auto-generated method stub
+                    // arg1 = year
+                    // arg2 = month
+                    // arg3 = day
+                    dateEndTv.setText(new StringBuilder().append(arg1).append("/")
+                            .append(arg2 + 1).append("/").append(arg3));
+                }
+            };
+
+    public int getWeek() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
+        int week = sharedPreferences.getInt(SAVE_PREFERENCE_WEEK, -1);
+        return week;
+    }
+
+    public int getYear() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
+        int year = sharedPreferences.getInt(SAVE_PREFERENCE_YEAR, -1);
+        return year;
+    }
 
     public TimeTableModel getTimeTableModel() {
         return mTimeTableModel;
@@ -568,7 +604,7 @@ public class MainActivity extends AppCompatActivity {
                                                             break;
                                                         case DragEvent.ACTION_DROP:
                                                             Log.d(TAG, "onDrag: ACTION_DROp");
-                                                            showDialogRegister(curPosition,finalPositon);
+                                                            showDialogRegister(curPosition, finalPositon);
                                                             break;
                                                         default:
                                                             break;
@@ -601,7 +637,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showDialogRegister(final int cur, final int finall){
+    private void showDialogRegister(final int cur, final int finall) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
         LayoutInflater inflater = MainActivity.this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.dialog_register, null);
@@ -616,7 +652,7 @@ public class MainActivity extends AppCompatActivity {
         dateStartImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,myDateListener,year,month,day);
+                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, myDateListener, year, month, day);
                 dialog.show();
 
             }
@@ -625,7 +661,7 @@ public class MainActivity extends AppCompatActivity {
         dateEndImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,myDateListener1,year,month,day);
+                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, myDateListener1, year, month, day);
                 dialog.show();
             }
         });
@@ -647,31 +683,20 @@ public class MainActivity extends AppCompatActivity {
         b.show();
     }
 
-    private DatePickerDialog.OnDateSetListener myDateListener = new
-            DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePicker arg0,
-                                      int arg1, int arg2, int arg3) {
-                    // TODO Auto-generated method stub
-                    // arg1 = year
-                    // arg2 = month
-                    // arg3 = day
-                    dateStartTv.setText(new StringBuilder().append(arg1).append("/")
-                            .append(arg2+1).append("/").append(arg3));
-                }
-            };
-    private DatePickerDialog.OnDateSetListener myDateListener1 = new
-            DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePicker arg0,
-                                      int arg1, int arg2, int arg3) {
-                    // TODO Auto-generated method stub
-                    // arg1 = year
-                    // arg2 = month
-                    // arg3 = day
-                    dateEndTv.setText(new StringBuilder().append(arg1).append("/")
-                            .append(arg2+1).append("/").append(arg3));
-                }
-            };
+    private void saveWeekAndYear(int week, int year) {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(SAVE_PREFERENCE_WEEK, week);
+        editor.putInt(SAVE_PREFERENCE_YEAR, year);
+        editor.commit();
+    }
 
+    private boolean isFirstLauncher() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
+        int week = sharedPreferences.getInt(SAVE_PREFERENCE_WEEK, -1);
+        if (week == -1) {
+            return true;
+        }
+        return false;
+    }
 }
