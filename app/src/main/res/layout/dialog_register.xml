@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:gravity="center"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="From: " />
+
+    <TextView
+        android:id="@+id/date_start_tv"
+        android:layout_width="80dp"
+        android:background="@color/colorPrimary"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:id="@+id/date_start_img"
+        android:layout_width="wrap_content"
+        android:src="@drawable/ic_date_range_black_24dp"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_margin="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="To: " />
+
+    <TextView
+        android:id="@+id/date_end_tv"
+        android:layout_width="80dp"
+        android:background="@color/colorPrimary"
+        android:layout_height="wrap_content" />
+    <ImageView
+        android:id="@+id/date_end_img"
+        android:layout_width="wrap_content"
+        android:src="@drawable/ic_date_range_black_24dp"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,18 +75,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public Lesson getLesson(String name) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.query(LESSON_TABLE, new String[]{LESSON_ID, LESSON_NAME}, LESSON_NAME + "=?",
-                new String[]{name}, null, null, null, null);
-        if (cursor != null)
-            cursor.moveToFirst();
-
-        Lesson lesson = new Lesson(cursor.getString(1));
-        // return note
-        return lesson;
-    }
 
     public List<Lesson> getAllLesson() {
 
@@ -123,26 +112,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.update(LESSON_TABLE, values, LESSON_NAME + " = ?",
                 new String[]{lesson.getName()});
     }
-
-    public boolean updateAllLessons(TimeTableModel timeTableModel) {
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        List<Lesson> listLesson = timeTableModel.getLessonList();
-
-        for (Lesson lesson : listLesson) {
-            contentValues.put(LESSON_NAME, lesson.getName());
-            try {
-                sqLiteDatabase.update(LESSON_TABLE, contentValues, LESSON_NAME + "=" + lesson.getName(), null);
-            } catch (Exception e) {
-                Log.d(TAG, "updateLesson: ");
-                return false;
-            }
-        }
-        if (sqLiteDatabase != null) sqLiteDatabase.close();
-
-        return true;
-    }
-
 
     public void deleteLesson(Lesson lesson) {
 
@@ -199,20 +168,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return listTimeTables;
     }
 
-    public boolean updateAllTimeTable(TimeTableModel timeTableModel) {
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-        List<TimeTable> listTimeTables = timeTableModel.getTimeTableList();
-        StringBuilder builder = new StringBuilder();
-        builder.append("insert or replace into " + TIMETABLE_TABLE + " values ");
-        for (TimeTable tableCell : listTimeTables) {
-            builder.append("(" + tableCell.getWeek() + "," + tableCell.getYear() + "),");
-        }
-        String sql = builder.toString();
+    public int updateTimeTable(TimeTable timeTable) {
 
-        sqLiteDatabase.execSQL(sql.substring(0, sql.length() - 1));
+        SQLiteDatabase db = this.getWritableDatabase();
 
-        if (sqLiteDatabase != null) sqLiteDatabase.close();
-        return true;
+        ContentValues values = new ContentValues();
+        values.put(LESSON_NAME, timeTable.getLessonName());
+        values.put(TIMETABLE_POSITION, timeTable.getPosition());
+        values.put(TIMETABLE_WEEK, timeTable.getWeek());
+        values.put(TIMETABLE_YEAR, timeTable.getYear());
+
+        // updating row
+        return db.update(TIMETABLE_TABLE, values,
+                TIMETABLE_POSITION + " = ? AND " + TIMETABLE_WEEK + "=? AND" + TIMETABLE_YEAR + "=?",
+                new String[]{String.valueOf(timeTable.getPosition()), String.valueOf(timeTable.getWeek()), String.valueOf(timeTable.getYear())});
     }
 
     public boolean deleteTimeTable(TimeTable timeTable) {
@@ -237,6 +206,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.query(LESSON_TABLE, new String[]{LESSON_ID,
                         LESSON_NAME}, LESSON_NAME + "=?",
                 new String[]{lesson.getName()}, null, null, null, null);
+        if (cursor.getCount() <= 0) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isExistTimeTable(TimeTable timeTable) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(TIMETABLE_TABLE, new String[]{TIMETABLE_ID,
+                        LESSON_NAME, TIMETABLE_POSITION, TIMETABLE_WEEK, TIMETABLE_YEAR},
+                TIMETABLE_POSITION + " =? AND " + TIMETABLE_WEEK + " =? AND " + TIMETABLE_YEAR + " =? ",
+                new String[]{String.valueOf(timeTable.getPosition()), String.valueOf(timeTable.getWeek()), String.valueOf(timeTable.getYear())},
+                null, null, null, null);
         if (cursor.getCount() <= 0) {
             return false;
         }

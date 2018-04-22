@@ -1,5 +1,6 @@
 package fga.bu22.android.home.view;
 
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -18,6 +19,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -53,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    private int year, month, day;
+
     private RelativeLayout mRelativeTimeTable;
 
     private GridView mGridTimeTable;
@@ -62,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
     private TimeTableAdapter mTimeTableAdapter;
 
     private TimeTableModel mTimeTableModel;
+
+    TextView dateStartTv;
+    TextView dateEndTv;
 
     private ImageView mImgPrev;
     private ImageView mImgNext;
@@ -96,9 +103,10 @@ public class MainActivity extends AppCompatActivity {
 
         initLessonData();
         initViews();
+        initModel();
         registerViewListenner();
 
-        initModel();
+
         initController();
     }
 
@@ -176,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
 
                 mLessonAdapter.notifyDataSetChanged();
                 break;
+            case TimeTableModel.EVENT_UPDATE_ALL_TO_DB:
+                Toast.makeText(MainActivity.this, propertyChangeEvent.getNewValue().toString(), Toast.LENGTH_SHORT).show();
             default:
                 break;
         }
@@ -330,6 +340,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //to do something
+                finish();
             }
         });
 
@@ -340,6 +351,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //to do something
+                Message message = new Message();
+                message.what = EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB;
+                mEditTimeTableController.sendMessage(message);
             }
         });
 
@@ -554,13 +568,7 @@ public class MainActivity extends AppCompatActivity {
                                                             break;
                                                         case DragEvent.ACTION_DROP:
                                                             Log.d(TAG, "onDrag: ACTION_DROp");
-                                                            Lesson lesson = mLessonAdapter.getItem(curPosition);
-
-                                                            Message message = new Message();
-                                                            message.what = EditTimeTableController.DROP_STATE_ADD_NEW_ITEM;
-                                                            message.obj = lesson;
-                                                            message.arg1 = finalPositon;
-                                                            mEditTimeTableController.sendMessage(message);
+                                                            showDialogRegister(curPosition,finalPositon);
                                                             break;
                                                         default:
                                                             break;
@@ -592,5 +600,78 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+
+    private void showDialogRegister(final int cur, final int finall){
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        LayoutInflater inflater = MainActivity.this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.dialog_register, null);
+
+        dateStartTv = dialogView.findViewById(R.id.date_start_tv);
+        dateEndTv = dialogView.findViewById(R.id.date_end_tv);
+        ImageView dateStartImg = dialogView.findViewById(R.id.date_start_img);
+        ImageView dateEndImg = dialogView.findViewById(R.id.date_end_img);
+
+        dialogBuilder.setView(dialogView);
+
+        dateStartImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,myDateListener,year,month,day);
+                dialog.show();
+
+            }
+        });
+
+        dateEndImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,myDateListener1,year,month,day);
+                dialog.show();
+            }
+        });
+
+
+        dialogBuilder.setTitle("Register cycle");
+        dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Lesson lesson = mLessonAdapter.getItem(cur);
+
+                Message message = new Message();
+                message.what = EditTimeTableController.DROP_STATE_ADD_NEW_ITEM;
+                message.obj = lesson;
+                message.arg1 = finall;
+                mEditTimeTableController.sendMessage(message);
+            }
+        });
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
+
+    private DatePickerDialog.OnDateSetListener myDateListener = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      int arg1, int arg2, int arg3) {
+                    // TODO Auto-generated method stub
+                    // arg1 = year
+                    // arg2 = month
+                    // arg3 = day
+                    dateStartTv.setText(new StringBuilder().append(arg1).append("/")
+                            .append(arg2+1).append("/").append(arg3));
+                }
+            };
+    private DatePickerDialog.OnDateSetListener myDateListener1 = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      int arg1, int arg2, int arg3) {
+                    // TODO Auto-generated method stub
+                    // arg1 = year
+                    // arg2 = month
+                    // arg3 = day
+                    dateEndTv.setText(new StringBuilder().append(arg1).append("/")
+                            .append(arg2+1).append("/").append(arg3));
+                }
+            };
 
 }

@@ -1,5 +1,7 @@
 package fga.bu22.android.models;
 
+import android.widget.Toast;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
@@ -18,6 +20,7 @@ public class TimeTableModel implements Serializable {
     public static final String EVENT_REPLACE_ITEM_TIMETABLE = "EVENT_REPLACE_ITEM_TIMETABLE";
     public static final String EVENT_DELETE_ITEM_TIMETABLE = "EVENT_DELETE_ITEM_TIMETABLE";
     public static final String EVENT_DELETE_LESSON = "EVENT_DELETE_LESSON";
+    public static final String EVENT_UPDATE_ALL_TO_DB = "EVENT_UPDATE_ALL_TO_DB";
 
     public static final String TIMETABLE = "TIMETABLE";
 
@@ -63,7 +66,20 @@ public class TimeTableModel implements Serializable {
     }
 
     public boolean addLesson(Lesson lesson) {
-        mLessonList.add(lesson);
+        boolean check = false;
+        for (int i = 0; i<mLessonList.size();i++){
+            if (!lesson.getName().equals(mLessonList.get(i).getName())){
+                check = true;
+            } else {
+                check = false;
+            }
+        }
+        if (check){
+            mLessonList.add(lesson);
+        }else {
+            mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
+            return false;
+        }
         mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
         return true;
     }
@@ -118,5 +134,10 @@ public class TimeTableModel implements Serializable {
 
         mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_ITEM_TIMETABLE, null, mTimeTableList);
         mPropertyChangeSupport.firePropertyChange(EVENT_DELETE_LESSON, null, mLessonList);
+    }
+
+    public void updateAllToDB() {
+        mPropertyChangeSupport.firePropertyChange(EVENT_UPDATE_ALL_TO_DB, "", "Update  Success");
+
     }
 }
