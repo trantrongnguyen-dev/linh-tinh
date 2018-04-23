@@ -8,5 +8,7 @@
     <string name="btn_cancel_edit_lesson_name">Cancel Editing</string>
     <string name="btn_ok">Xác nhận</string>
     <string name="btn_cancel">Hủy</string>
+
     <string name="exist_lesson_name">Lesson name existed. Please choose another name!</string>
+    <string name="empty_lesson_name">Lesson name is empty. Please input lesson name!</string>
 </resources>

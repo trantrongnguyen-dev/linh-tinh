@@ -33,6 +33,15 @@
         android:layout_below="@+id/txt_edit_lesson_name"
         android:layout_centerHorizontal="true" />
 
+    <ImageView
+        android:id="@+id/img_voice"
+        android:src="@drawable/ic_keyboard_voice_black_24dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_toRightOf="@id/edit_lesson_name"
+        android:layout_marginLeft="20dp"
+        android:layout_below="@+id/txt_edit_lesson_name"/>
+
     <Button
         android:id="@+id/btn_ok"
         style="@style/ButtonStyle"

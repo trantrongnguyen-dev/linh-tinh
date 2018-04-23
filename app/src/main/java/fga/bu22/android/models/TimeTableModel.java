@@ -65,13 +65,18 @@ public class TimeTableModel implements Serializable {
 
     public boolean addLesson(Lesson lesson) {
         boolean check = true;
-        for (int i = 0; i < mLessonList.size(); i++) {
-            if (lesson.getName().equals(mLessonList.get(i).getName())) {
+        int listLessonSize = mLessonList.size();
+
+        if (lesson.getName().isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < listLessonSize; i++) {
+            if ((lesson.getName().equals(mLessonList.get(i).getName())) || mLessonList.get(listLessonSize - 1).getName() != null) {
                 check = false;
             }
         }
         if (check) {
-            for (int i = 0; i < mLessonList.size(); i++) {
+            for (int i = 0; i < listLessonSize; i++) {
                 if (mLessonList.get(i).getName() == null) {
                     mLessonList.set(i, lesson);
                     mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
