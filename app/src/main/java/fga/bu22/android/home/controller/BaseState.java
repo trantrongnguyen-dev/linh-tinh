@@ -9,11 +9,11 @@ import android.os.Message;
 public class BaseState {
     protected EditTimeTableController mController;
 
-    public BaseState(EditTimeTableController controller){
+    public BaseState(EditTimeTableController controller) {
         mController = controller;
     }
 
-    public void handleMsg(Message msg){
+    public void handleMsg(Message msg) {
         // do somethings
     }
 }

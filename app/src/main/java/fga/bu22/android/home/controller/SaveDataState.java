@@ -3,6 +3,7 @@ package fga.bu22.android.home.controller;
 
 import android.os.AsyncTask;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -42,14 +43,8 @@ public class SaveDataState extends BaseState {
                 }
                 break;
             case EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB:
-                List<TimeTable> timeTableList = mController.getMainActivity().getTimeTableModel().getTimeTableList();
-                for (TimeTable timeTable : timeTableList) {
-                    if (mController.getDatabaseHelper().isExistTimeTable(timeTable)) {
-                        mController.getDatabaseHelper().updateTimeTable(timeTable);
-                    } else {
-                        mController.getDatabaseHelper().addTimeTable(timeTable);
-                    }
-                }
+                new UpdateLessonTask().execute();
+                new UpdateTimetableTask().execute();
                 break;
             default:
                 break;
@@ -65,21 +60,44 @@ public class SaveDataState extends BaseState {
         return false;
     }
 
+//    private boolean checkExistTimeTable(TimeTable timeTable, List<Lesson> listLesson) {
+//        for (Lesson ls : listLesson) {
+//            if (lesson.getName().equals(ls.getName())) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+
     private class UpdateTimetableTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
+            List<TimeTable> timeTableList = mController.getMainActivity().getTimeTableModel().getTimeTableList();
             List<Lesson> lessonList = mController.getMainActivity().getTimeTableModel().getLessonList();
+            List<TimeTable> timeTables = mController.getDatabaseHelper().getAllTimeTable();
 
-            for (Lesson lesson1 : lessonList) {
-                if (!mController.getDatabaseHelper().isExist(lesson1)) {
-                    mController.getDatabaseHelper().addLesson(lesson1);
+            for (TimeTable timeTable : timeTables) {
+                for (Lesson lesson : lessonList) {
+                    Log.d(TAG, "doInBackground: " + lesson.getOldName());
+                    if (lesson.getOldName() != null) {
+                        if (lesson.getOldName().equals(timeTable.getLessonName())) {
+                            int a = mController.getDatabaseHelper().updateTimeTableByLesson(lesson, timeTable);
+                            Log.d(TAG, "doInBackground: a  " + a);
+                        }
+                    }
                 }
             }
 
-            List<Lesson> lessonListDB = mController.getDatabaseHelper().getAllLesson();
-            for (Lesson lessonDB : lessonListDB) {
-                if (!checkExist(lessonDB, lessonList)) {
-                    mController.getDatabaseHelper().deleteLesson(lessonDB);
+            for (TimeTable timeTable : timeTableList) {
+
+                if (("").equals(timeTable.getLessonName())) {
+                    mController.getDatabaseHelper().deleteTimeTable(timeTable.getPosition(), timeTable.getWeek(), timeTable.getYear());
+                }
+
+                if (mController.getDatabaseHelper().isExistTimeTable(timeTable)) {
+                    mController.getDatabaseHelper().updateTimeTable(timeTable);
+                } else {
+                    mController.getDatabaseHelper().addTimeTable(timeTable);
                 }
             }
             return null;
@@ -95,7 +113,22 @@ public class SaveDataState extends BaseState {
     private class UpdateLessonTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
+            List<Lesson> lessonList = mController.getMainActivity().getTimeTableModel().getLessonList();
 
+            for (Lesson lesson1 : lessonList) {
+                if (lesson1.getName() != null) {
+                    if (!mController.getDatabaseHelper().isExist(lesson1)) {
+                        mController.getDatabaseHelper().addLesson(lesson1);
+                    }
+                }
+            }
+
+            List<Lesson> lessonListDB = mController.getDatabaseHelper().getAllLesson();
+            for (Lesson lessonDB : lessonListDB) {
+                if (!checkExist(lessonDB, lessonList)) {
+                    mController.getDatabaseHelper().deleteLesson(lessonDB);
+                }
+            }
             return null;
         }
 

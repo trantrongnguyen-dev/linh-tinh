@@ -64,27 +64,31 @@ public class TimeTableModel implements Serializable {
     }
 
     public boolean addLesson(Lesson lesson) {
-        boolean check = false;
+        boolean check = true;
         for (int i = 0; i < mLessonList.size(); i++) {
-            if (!lesson.getName().equals(mLessonList.get(i).getName())) {
-                check = true;
-            } else {
+            if (lesson.getName().equals(mLessonList.get(i).getName())) {
                 check = false;
             }
         }
         if (check) {
-            mLessonList.add(lesson);
+            for (int i = 0; i < mLessonList.size(); i++) {
+                if (mLessonList.get(i).getName() == null) {
+                    mLessonList.set(i, lesson);
+                    mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
+                    return true;
+                }
+            }
+            mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
+            return true;
         } else {
             mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
             return false;
         }
-        mPropertyChangeSupport.firePropertyChange(EVENT_LOAD_LESSON_LIST, null, mLessonList);
-        return true;
     }
 
     public void replaceItemTimeTable(TimeTable timeTable, int newPosition, int week, int year) {
         mTimeTableList.set(newPosition, new TimeTable(timeTable.getLessonName(), week, year, newPosition));
-        mTimeTableList.set(timeTable.getPosition(), new TimeTable());
+        mTimeTableList.set(timeTable.getPosition(), new TimeTable("", week, year, timeTable.getPosition()));
         mPropertyChangeSupport.firePropertyChange(EVENT_REPLACE_ITEM_TIMETABLE, null, mTimeTableList);
     }
 
@@ -95,7 +99,7 @@ public class TimeTableModel implements Serializable {
 
     public void deleteLesson(Lesson lesson) {
         mLessonList.remove(lesson);
-
+        mLessonList.add(new Lesson());
         //Delete timeTable item have lesson
         ArrayList<Integer> itemPosition = new ArrayList<>();
         for (int i = 0; i < mTimeTableList.size(); i++) {
@@ -117,8 +121,11 @@ public class TimeTableModel implements Serializable {
 
     public void replaceLessonName(String oldName, String newName) {
         for (Lesson lesson : mLessonList) {
-            if (lesson.getName().equals(oldName)) {
-                lesson.setName(newName);
+            if (lesson.getName() != null) {
+                if (lesson.getName().equals(oldName)) {
+                    lesson.setName(newName);
+                    lesson.setOldName(oldName);
+                }
             }
         }
 

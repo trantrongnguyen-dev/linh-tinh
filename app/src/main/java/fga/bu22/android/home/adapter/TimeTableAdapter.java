@@ -26,6 +26,7 @@ public class TimeTableAdapter extends BaseAdapter {
     private LayoutInflater mLayoutInflater;
 
     private int mCountRowTable;
+
     public TimeTableAdapter(Context context, List<TimeTable> listTimeTable) {
         mListTimeTable = listTimeTable;
         mLayoutInflater = LayoutInflater.from(context);

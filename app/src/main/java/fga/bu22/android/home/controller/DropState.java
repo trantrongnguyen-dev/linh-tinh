@@ -1,7 +1,10 @@
 package fga.bu22.android.home.controller;
 
+import android.os.AsyncTask;
 import android.os.Message;
+import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import fga.bu22.android.models.Lesson;
@@ -13,7 +16,7 @@ import fga.bu22.android.models.TimeTableModel;
  */
 
 public class DropState extends BaseState {
-
+    private static final String TAG = DropState.class.getSimpleName();
     TimeTableModel mTimeTableModel;
 
     public DropState(EditTimeTableController controller) {
@@ -34,6 +37,28 @@ public class DropState extends BaseState {
                         int postion = msg.arg1;
                         mTimeTableModel.updateTimeTable(new TimeTable(lesson.getName(), week, year, postion));
                     }
+                    if (msg.obj instanceof ArrayList) {
+                        Log.d(TAG, "handleMsg: ");
+                        ArrayList<TimeTable> listTimeTables = (ArrayList<TimeTable>) msg.obj;
+
+                        for (TimeTable timeTable : listTimeTables) {
+                            Log.d(TAG, "handleMsg: for " + timeTable.getWeek());
+                            mController.getDatabaseHelper().addTimeTable(timeTable);
+                        }
+
+                        List<TimeTable> listTimeTable = mController.getDatabaseHelper().getAllTimeTableByWeek(week, year);
+
+                        ArrayList<TimeTable> ttDatasource = new ArrayList<>();
+
+                        for (int i = 0; i < 49; i++) {
+                            ttDatasource.add(new TimeTable());
+                        }
+
+                        for (TimeTable timeTable : listTimeTable) {
+                            ttDatasource.set(timeTable.getPosition(), timeTable);
+                        }
+                        mTimeTableModel.setTimeTableList(ttDatasource);
+                    }
                 }
                 break;
             case EditTimeTableController.DROP_STATE_REPLACE:
@@ -53,6 +78,7 @@ public class DropState extends BaseState {
                 if (msg.obj != null) {
                     Lesson lesson = (Lesson) msg.obj;
                     mTimeTableModel.deleteLesson(lesson);
+                    mController.getDatabaseHelper().deleteTimeTable(lesson.getName());
                 }
                 break;
             default:

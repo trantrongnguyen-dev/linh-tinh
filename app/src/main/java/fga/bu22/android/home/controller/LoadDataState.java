@@ -31,7 +31,6 @@ public class LoadDataState extends BaseState {
         if (msg.obj != null) {
             switch (msg.obj.toString()) {
                 case MainActivity.OBJ_LOAD_DATA_TIME_TABLE:
-                    //TODO: load from database here
                     int week = mController.getMainActivity().getWeek();
                     int year = mController.getMainActivity().getYear();
 
@@ -50,9 +49,18 @@ public class LoadDataState extends BaseState {
                     mTimeTableModel.setTimeTableList(ttDatasource);
                     break;
                 case MainActivity.OBJ_LOAD_DATA_LESSON:
-                    //TODO: load from database here
                     List<Lesson> lessons = mController.getDatabaseHelper().getAllLesson();
-                    mTimeTableModel.setLessonList(lessons);
+
+                    ArrayList<Lesson> lessonsData = new ArrayList<>();
+
+                    for (int i = 0; i < 15; i++) {
+                        lessonsData.add(new Lesson());
+                    }
+
+                    for (int i = 0; i < lessons.size(); i++) {
+                        lessonsData.set(i, lessons.get(i));
+                    }
+                    mTimeTableModel.setLessonList(lessonsData);
                     break;
                 default:
                     break;

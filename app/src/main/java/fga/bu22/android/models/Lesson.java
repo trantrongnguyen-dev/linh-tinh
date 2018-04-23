@@ -9,9 +9,16 @@ import java.io.Serializable;
 public class Lesson implements Serializable {
 
     private String name;
+    private String oldName;
 
     public Lesson(String name) {
         this.name = name;
+        this.oldName = "";
+    }
+
+    public Lesson(String name, String oldName) {
+        this.name = name;
+        this.oldName = oldName;
     }
 
     public Lesson() {
@@ -24,5 +31,13 @@ public class Lesson implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getOldName() {
+        return oldName;
+    }
+
+    public void setOldName(String oldName) {
+        this.oldName = oldName;
     }
 }

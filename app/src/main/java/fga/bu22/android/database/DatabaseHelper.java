@@ -20,7 +20,7 @@ import fga.bu22.android.models.TimeTable;
 public class DatabaseHelper extends SQLiteOpenHelper {
     //nguyen nguyehn nencrnguyen69
     public static final String DATABASE_NAME = "Timetable_database";
-    public static final int DATABASE_VERSON = 4;
+    public static final int DATABASE_VERSON = 7;
     public static final String TIMETABLE_TABLE = "tbl_Timetable";
     public static final String TIMETABLE_ID = "timetableID";
     public static final String TIMETABLE_WEEK = "timetableWeek";
@@ -31,11 +31,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String LESSON_TABLE = "tbl_Lesson";
     public static final String LESSON_ID = "lessonID";
     public static final String LESSON_NAME = "lessonName";
+    public static final String LESSON_OLD_NAME = "lessonOldName";
 
 
-    public static final String CREATE_LESSON = "CREATE TABLE  " + LESSON_TABLE + " ( " + LESSON_ID + " INTEGER PRIMARY KEY , " + LESSON_NAME + " TEXT " + ")";
-    public static final String CREATE_TIMETABLE = "CREATE TABLE  " + TIMETABLE_TABLE + " ( " + TIMETABLE_ID + " INTEGER PRIMARY KEY , "  + LESSON_NAME + " TEXT , "
-            + TIMETABLE_POSITION + " INTEGER , " + TIMETABLE_WEEK + " INTEGER , " + TIMETABLE_YEAR + "INTEGER " + ")";
+    public static final String CREATE_LESSON = "CREATE TABLE  " + LESSON_TABLE + " ( " + LESSON_ID + " INTEGER PRIMARY KEY , " + LESSON_NAME + " TEXT , " + LESSON_OLD_NAME + " TEXT " + ")";
+    public static final String CREATE_TIMETABLE = "CREATE TABLE  " + TIMETABLE_TABLE + " ( " + TIMETABLE_ID + " INTEGER PRIMARY KEY , " + LESSON_NAME + " TEXT , "
+            + TIMETABLE_POSITION + " INTEGER , " + TIMETABLE_WEEK + " INTEGER , " + TIMETABLE_YEAR + " INTEGER " + ")";
 
 
     public static final String TAG = DatabaseHelper.class.getSimpleName();
@@ -50,14 +51,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_LESSON);
         db.execSQL(CREATE_TIMETABLE);
-        Log.d(TAG, "onCreate: "+DATABASE_VERSON);
+        Log.d(TAG, "onCreate: " + DATABASE_VERSON);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
         db.execSQL("DROP TABLE IF EXISTS " + LESSON_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + TIMETABLE_TABLE);
-        Log.d(TAG, "onUpgrade: "+DATABASE_VERSON);
+        Log.d(TAG, "onUpgrade: " + DATABASE_VERSON);
         onCreate(db);
     }
 
@@ -67,6 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(LESSON_NAME, lesson.getName());
+        values.put(LESSON_OLD_NAME, lesson.getOldName());
 
         // Trèn một dòng dữ liệu vào bảng.
         db.insert(LESSON_TABLE, null, values);
@@ -90,6 +92,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             do {
                 Lesson lesson = new Lesson();
                 lesson.setName(cursor.getString(1));
+                lesson.setOldName(cursor.getString(2));
 
 
                 // Thêm vào danh sách.
@@ -107,10 +110,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(LESSON_NAME, lesson.getName());
+        values.put(LESSON_OLD_NAME, lesson.getOldName());
 
         // updating row
         return db.update(LESSON_TABLE, values, LESSON_NAME + " = ?",
-                new String[]{lesson.getName()});
+                new String[]{lesson.getOldName()});
     }
 
     public void deleteLesson(Lesson lesson) {
@@ -143,9 +147,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         List<TimeTable> timeTableList = new ArrayList<>();
         Cursor cursor = db.query(TIMETABLE_TABLE,
-                new String[]{TIMETABLE_ID, LESSON_NAME, TIMETABLE_POSITION, TIMETABLE_WEEK,TIMETABLE_YEAR},
-                TIMETABLE_WEEK + "=? AND " + TIMETABLE_YEAR + " =? ",
-                new String[]{String.valueOf(week)}, null, null, null, null);
+                new String[]{TIMETABLE_ID, LESSON_NAME, TIMETABLE_POSITION, TIMETABLE_WEEK, TIMETABLE_YEAR},
+                TIMETABLE_WEEK + " =? AND " + TIMETABLE_YEAR + " =? ",
+                new String[]{String.valueOf(week), String.valueOf(year)}, null, null, null, null);
         if (cursor.moveToFirst()) {
             do {
                 TimeTable timeTable = new TimeTable();
@@ -202,15 +206,45 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // updating row
         return db.update(TIMETABLE_TABLE, values,
-                TIMETABLE_POSITION + " = ? AND " + TIMETABLE_WEEK + "=? AND" + TIMETABLE_YEAR + "=?",
+                TIMETABLE_POSITION + " = ? AND " + TIMETABLE_WEEK + "=? AND " + TIMETABLE_YEAR + " =? ",
                 new String[]{String.valueOf(timeTable.getPosition()), String.valueOf(timeTable.getWeek()), String.valueOf(timeTable.getYear())});
     }
 
-    public boolean deleteTimeTable(TimeTable timeTable) {
+    public int updateTimeTableByLesson(Lesson lesson, TimeTable timeTable) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(LESSON_NAME, lesson.getName());
+        values.put(TIMETABLE_POSITION, timeTable.getPosition());
+        values.put(TIMETABLE_WEEK, timeTable.getWeek());
+        values.put(TIMETABLE_YEAR, timeTable.getYear());
+
+        return db.update(TIMETABLE_TABLE, values,
+                LESSON_NAME + " = ? AND " + TIMETABLE_POSITION + " =? AND " + TIMETABLE_WEEK + " =? AND " + TIMETABLE_YEAR + " =? ",
+                new String[]{lesson.getOldName(), String.valueOf(timeTable.getPosition()), String.valueOf(timeTable.getWeek()), String.valueOf(timeTable.getYear())});
+    }
+
+    public boolean deleteTimeTable(int position, int week, int year) {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         try {
-            sqLiteDatabase.delete(TIMETABLE_TABLE, TIMETABLE_WEEK + "= ? AND"
-                    + TIMETABLE_YEAR + " =? ", new String[]{String.valueOf(timeTable.getWeek()), String.valueOf(timeTable.getYear())});
+            sqLiteDatabase.delete(TIMETABLE_TABLE, TIMETABLE_POSITION + "=? AND " + TIMETABLE_WEEK + "= ? AND "
+                    + TIMETABLE_YEAR + " =? ", new String[]{String.valueOf(position), String.valueOf(week), String.valueOf(year)});
+        } catch (Exception e) {
+            Log.d(TAG, "delete error: ");
+            return false;
+        } finally {
+            if (sqLiteDatabase != null) {
+                sqLiteDatabase.close();
+            }
+        }
+        return true;
+    }
+
+    public boolean deleteTimeTable(String name) {
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        try {
+            sqLiteDatabase.delete(TIMETABLE_TABLE, LESSON_NAME + "=? "
+                    , new String[]{name});
         } catch (Exception e) {
             Log.d(TAG, "delete error: ");
             return false;
@@ -226,7 +260,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(LESSON_TABLE, new String[]{LESSON_ID,
-                        LESSON_NAME}, LESSON_NAME + "=?",
+                        LESSON_NAME}, LESSON_NAME + " =? ",
                 new String[]{lesson.getName()}, null, null, null, null);
         if (cursor.getCount() <= 0) {
             return false;
