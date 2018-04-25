@@ -31,6 +31,9 @@ import android.widget.Toast;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
+import java.sql.Array;
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -50,7 +53,6 @@ import fga.bu22.android.models.Lesson;
 import fga.bu22.android.models.TimeTable;
 import fga.bu22.android.models.TimeTableModel;
 import fga.bu22.android.util.Logger;
-import fga.bu22.android.util.Messager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -63,15 +65,21 @@ public class MainActivity extends AppCompatActivity {
     private static final String SHARED_PREFERENCES_WEEK_OF_YEAR = "SHARED_PREFERENCES_WEEK_OF_YEAR";
     private static final String SAVE_PREFERENCE_WEEK = "SAVE_PREFERENCE_WEEK";
     private static final String SAVE_PREFERENCE_YEAR = "SAVE_PREFERENCE_YEAR";
-    TextView dateStartTv;
-    TextView dateEndTv;
     private int yearDialog, monthDialog, dayDialog;
+
     private RelativeLayout mRelativeTimeTable;
+
     private GridView mGridTimeTable;
     private GridView mGridLesson;
+
     private LessonAdapter mLessonAdapter;
     private TimeTableAdapter mTimeTableAdapter;
+
     private TimeTableModel mTimeTableModel;
+
+    TextView dateStartTv;
+    TextView dateEndTv;
+
     private ImageView mImgPrev;
     private ImageView mImgNext;
 
@@ -96,65 +104,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean mIsDragToDelete = false;
     private boolean mIsModify = false;
 
-    private Messager mMessager;
-    private DatePickerDialog.OnDateSetListener dateStartListener = new
-            DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePicker arg0,
-                                      int arg1, int arg2, int arg3) {
-
-                    dateStartTv.setText(new StringBuilder().append(arg1).append("/")
-                            .append(arg2 + 1).append("/").append(arg3));
-                }
-            };
-    private DatePickerDialog.OnDateSetListener dateEndListener = new
-            DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePicker arg0,
-                                      int arg1, int arg2, int arg3) {
-
-                    dateEndTv.setText(new StringBuilder().append(arg1).append("/")
-                            .append(arg2 + 1).append("/").append(arg3));
-                }
-            };
-    private DatePickerDialog.OnDateSetListener labelDateListener = new
-            DatePickerDialog.OnDateSetListener() {
-                @Override
-                public void onDateSet(DatePicker arg0,
-                                      final int arg1, int arg2, int arg3) {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.set(arg1, arg2, arg3);
-                    final int week = calendar.get(Calendar.WEEK_OF_YEAR);
-
-                    if (mIsModify) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setTitle("Calendar");
-                        builder.setMessage("Bạn có muốn lưu thay đổi không?");
-                        builder.setCancelable(false);
-                        builder.setPositiveButton("Ứ chịu", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                loadDataByLabel(week, arg1);
-                            }
-                        });
-                        builder.setNegativeButton("Được", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                mMessager.editTimeTableMessager(mEditTimeTableController,
-                                        EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB);
-                                loadDataByLabel(week, arg1);
-                            }
-                        });
-                        AlertDialog alertDialog = builder.create();
-                        alertDialog.show();
-                    } else {
-                        loadDataByLabel(week, arg1);
-                    }
-
-
-                }
-            };
-
     public TimeTableModel getTimeTableModel() {
         return mTimeTableModel;
     }
@@ -163,6 +112,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.d("CHINH", "onCreate: ");
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -177,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
         initController();
     }
 
+
     private void initController() {
         mEditTimeTableController = new EditTimeTableController(this);
 
@@ -190,12 +142,16 @@ public class MainActivity extends AppCompatActivity {
 
         mTxtPeriod.setText(getWeek() + "");
         //Load data lesson
-        mMessager.editTimeTableMessager(mEditTimeTableController,
-                EditTimeTableController.LOAD_DATA_STATE, OBJ_LOAD_DATA_LESSON);
+        Message message = new Message();
+        message.what = EditTimeTableController.LOAD_DATA_STATE;
+        message.obj = OBJ_LOAD_DATA_LESSON;
+        mEditTimeTableController.sendMessage(message);
 
         //Load data timetable
-        mMessager.editTimeTableMessager(mEditTimeTableController,
-                EditTimeTableController.LOAD_DATA_STATE, OBJ_LOAD_DATA_TIME_TABLE);
+        message = new Message();
+        message.what = EditTimeTableController.LOAD_DATA_STATE;
+        message.obj = OBJ_LOAD_DATA_TIME_TABLE;
+        mEditTimeTableController.sendMessage(message);
     }
 
     private void initModel() {
@@ -210,15 +166,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public int getWeek() {
-        SharedPreferences sharedPreferences =
-                getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
         int week = sharedPreferences.getInt(SAVE_PREFERENCE_WEEK, -1);
         return week;
     }
 
     public int getYear() {
-        SharedPreferences sharedPreferences =
-                getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
         int year = sharedPreferences.getInt(SAVE_PREFERENCE_YEAR, -1);
         return year;
     }
@@ -229,42 +183,46 @@ public class MainActivity extends AppCompatActivity {
                 mLessonList.clear();
                 mLessonList.addAll(mTimeTableModel.getLessonList());
                 mLessonAdapter.notifyDataSetChanged();
+
                 mIsModify = false;
                 break;
             case TimeTableModel.EVENT_LOAD_TIMETABLE:
-                mTimeTableAdapter = new TimeTableAdapter(MainActivity.this,
-                        (ArrayList<TimeTable>) propertyChangeEvent.getNewValue());
+                mTimeTableAdapter = new TimeTableAdapter(MainActivity.this, (ArrayList<TimeTable>) propertyChangeEvent.getNewValue());
                 mGridTimeTable.setAdapter(mTimeTableAdapter);
+
                 mIsModify = false;
                 break;
             case TimeTableModel.EVENT_UPDATE_TIMETABLE:
-                updateTimeTableAdapter(propertyChangeEvent);
+                mTimeTableAdapter = new TimeTableAdapter(MainActivity.this, (ArrayList<TimeTable>) propertyChangeEvent.getNewValue());
+                mGridTimeTable.setAdapter(mTimeTableAdapter);
+
+                mIsModify = true;
                 break;
             case TimeTableModel.EVENT_REPLACE_ITEM_TIMETABLE:
-                updateTimeTableAdapter(propertyChangeEvent);
+                mTimeTableAdapter = new TimeTableAdapter(MainActivity.this, (ArrayList<TimeTable>) propertyChangeEvent.getNewValue());
+                mGridTimeTable.setAdapter(mTimeTableAdapter);
+
+                mIsModify = true;
                 break;
             case TimeTableModel.EVENT_DELETE_ITEM_TIMETABLE:
-                updateTimeTableAdapter(propertyChangeEvent);
+                mTimeTableAdapter = new TimeTableAdapter(MainActivity.this, (ArrayList<TimeTable>) propertyChangeEvent.getNewValue());
+                mGridTimeTable.setAdapter(mTimeTableAdapter);
+
+                mIsModify = true;
                 break;
             case TimeTableModel.EVENT_DELETE_LESSON:
                 mLessonList.clear();
                 mLessonList.addAll(mTimeTableModel.getLessonList());
+
                 mLessonAdapter.notifyDataSetChanged();
+
                 mIsModify = true;
                 break;
             case TimeTableModel.EVENT_UPDATE_ALL_TO_DB:
-                Toast.makeText(MainActivity.this,
-                        propertyChangeEvent.getNewValue().toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, propertyChangeEvent.getNewValue().toString(), Toast.LENGTH_SHORT).show();
             default:
                 break;
         }
-    }
-
-    private void updateTimeTableAdapter(PropertyChangeEvent propertyChangeEvent) {
-        mTimeTableAdapter = new TimeTableAdapter(MainActivity.this,
-                (ArrayList<TimeTable>) propertyChangeEvent.getNewValue());
-        mGridTimeTable.setAdapter(mTimeTableAdapter);
-        mIsModify = true;
     }
 
     private void initViews() {
@@ -293,8 +251,6 @@ public class MainActivity extends AppCompatActivity {
 
         mAnimZoomIn = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.delete_anim_zoom_in);
         mAnimZoomOut = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.delete_anim_zoom_out);
-
-        mMessager = new Messager();
     }
 
     private void registerViewListenner() {
@@ -315,8 +271,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 DatePickerDialog datePickerDialog =
-                        new DatePickerDialog(MainActivity.this,
-                                labelDateListener, yearDialog, monthDialog, dayDialog);
+                        new DatePickerDialog(MainActivity.this, myDateListener3, yearDialog, monthDialog, dayDialog);
                 datePickerDialog.show();
             }
         });
@@ -340,8 +295,9 @@ public class MainActivity extends AppCompatActivity {
                     builder.setNegativeButton("Được", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            mMessager.editTimeTableMessager(mEditTimeTableController,
-                                    EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB);
+                            Message message = new Message();
+                            message.what = EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB;
+                            mEditTimeTableController.sendMessage(message);
                             loadDataByNextButton();
                         }
                     });
@@ -372,8 +328,9 @@ public class MainActivity extends AppCompatActivity {
                     builder.setNegativeButton("Được", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            mMessager.editTimeTableMessager(mEditTimeTableController,
-                                    EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB);
+                            Message message = new Message();
+                            message.what = EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB;
+                            mEditTimeTableController.sendMessage(message);
                             loadDataByPrevButton();
                         }
                     });
@@ -393,6 +350,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!mIsEditingLessonName) {
                     return;
                 }
+
                 Intent intent = new Intent(MainActivity.this, EditLessonNameActivity.class);
                 intent.putExtra(INTENT_LESSON_NAME, mTimeTableModel.getLessonList().get(i).getName());
                 intent.putExtra(INTENT_LESSON_LIST, mTimeTableModel);
@@ -415,8 +373,10 @@ public class MainActivity extends AppCompatActivity {
                     listName.add(oldLessonName);
                     listName.add(newLessonName);
 
-                    mMessager.editTimeTableMessager(mEditTimeTableController,
-                            EditTimeTableController.SAVE_DATA_STATE_REPLACE_LESSON, listName);
+                    Message msg = new Message();
+                    msg.what = EditTimeTableController.SAVE_DATA_STATE_REPLACE_LESSON;
+                    msg.obj = listName;
+                    mEditTimeTableController.sendMessage(msg);
                 }
         }
     }
@@ -438,9 +398,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String name = edtLessonName.getText().toString();
                         Lesson lesson = new Lesson(name);
-                        mMessager.editTimeTableMessager(mEditTimeTableController,
-                                EditTimeTableController.SAVE_DATA_STATE_ADD_LESSON, lesson);
-
+                        Message message = new Message();
+                        message.what = EditTimeTableController.SAVE_DATA_STATE_ADD_LESSON;
+                        message.obj = lesson;
+                        mEditTimeTableController.sendMessage(message);
                     }
                 });
                 AlertDialog b = dialogBuilder.create();
@@ -480,6 +441,7 @@ public class MainActivity extends AppCompatActivity {
         mBtnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //to do something
                 finish();
             }
         });
@@ -489,8 +451,11 @@ public class MainActivity extends AppCompatActivity {
         mBtnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMessager.editTimeTableMessager(mEditTimeTableController,
-                        EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB);
+                //to do something
+                Message message = new Message();
+                message.what = EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB;
+                mEditTimeTableController.sendMessage(message);
+
                 mIsModify = false;
             }
         });
@@ -514,7 +479,7 @@ public class MainActivity extends AppCompatActivity {
                         if ((curPosition > TimeTableAdapter.MAX_COLUMN) && (curPosition % TimeTableAdapter.MAX_COLUMN) != 0) {
 
                             TimeTable timeTable = mTimeTableAdapter.getItem(curPosition);
-                            Logger.d(TAG, "onTouch: " + timeTable.getLessonName());
+                            Log.d(TAG, "onTouch: " + timeTable.getLessonName());
                             if (timeTable.getLessonName() == null) {
                                 break;
                             }
@@ -541,8 +506,11 @@ public class MainActivity extends AppCompatActivity {
                                                     v.startAnimation(mAnimZoomOut);
                                                     break;
                                                 case DragEvent.ACTION_DROP:
-                                                    mMessager.editTimeTableMessager(mEditTimeTableController,
-                                                            EditTimeTableController.DROP_STATE_DELETE_ITEM, mTimeTableAdapter.getItem(curPosition));
+                                                    Message msg = new Message();
+
+                                                    msg.what = EditTimeTableController.DROP_STATE_DELETE_ITEM;
+                                                    msg.obj = mTimeTableAdapter.getItem(curPosition);
+                                                    mEditTimeTableController.sendMessage(msg);
                                                     mIsDragToDelete = true;
                                                     v.startAnimation(mAnimZoomOut);
                                                     break;
@@ -572,8 +540,11 @@ public class MainActivity extends AppCompatActivity {
                                                             v.setBackground(ContextCompat.getDrawable(MainActivity.this, R.drawable.boder_grid));
                                                             break;
                                                         case DragEvent.ACTION_DROP:
-                                                            mMessager.editTimeTableMessager(mEditTimeTableController,
-                                                                    EditTimeTableController.DROP_STATE_REPLACE, mTimeTableAdapter.getItem(curPosition), positionDrop);
+                                                            Message message = new Message();
+                                                            message.what = EditTimeTableController.DROP_STATE_REPLACE;
+                                                            message.obj = mTimeTableAdapter.getItem(curPosition);
+                                                            message.arg1 = positionDrop;
+                                                            mEditTimeTableController.sendMessage(message);
                                                             break;
                                                         default:
                                                             break;
@@ -614,6 +585,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     private void initGridLessonListenner() {
         if (mGridLesson != null) {
             mGridLesson.setOnTouchListener(new View.OnTouchListener() {
@@ -634,12 +606,10 @@ public class MainActivity extends AppCompatActivity {
                             if (curPosition == GridView.INVALID_POSITION) {
                                 return false;
                             }
-                            Lesson lesson = mLessonAdapter.getItem(curPosition);
-                            Logger.d(TAG, "onTouch: " + lesson.getName());
-                            if (lesson.getName() == null) {
-                                break;
-                            }
+
                             mItemTouch = mGridLesson.getChildAt(curPosition);
+
+
                             mItemTouch.startDrag(null, new View.DragShadowBuilder(mItemTouch) {
                                 @Override
                                 public void onProvideShadowMetrics(Point shadowSize, Point shadowTouchPoint) {
@@ -664,9 +634,11 @@ public class MainActivity extends AppCompatActivity {
                                                     v.startAnimation(mAnimZoomOut);
                                                     break;
                                                 case DragEvent.ACTION_DROP:
-                                                    mMessager.editTimeTableMessager(mEditTimeTableController,
-                                                            EditTimeTableController.DROP_STATE_DELETE_LESSON,
-                                                            mLessonAdapter.getItem(curPosition));
+                                                    Message msg = new Message();
+
+                                                    msg.what = EditTimeTableController.DROP_STATE_DELETE_LESSON;
+                                                    msg.obj = mLessonAdapter.getItem(curPosition);
+                                                    mEditTimeTableController.sendMessage(msg);
                                                     mIsDragToDelete = true;
                                                     v.startAnimation(mAnimZoomOut);
                                                     break;
@@ -683,6 +655,7 @@ public class MainActivity extends AppCompatActivity {
                                             mGridTimeTable.getChildAt(i).setOnDragListener(new View.OnDragListener() {
                                                 @Override
                                                 public boolean onDrag(View v, DragEvent event) {
+
                                                     switch (event.getAction()) {
                                                         case DragEvent.ACTION_DRAG_ENTERED:
                                                             v.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
@@ -740,23 +713,25 @@ public class MainActivity extends AppCompatActivity {
         ImageView dateEndImg = dialogView.findViewById(R.id.date_end_img);
 
         dialogBuilder.setView(dialogView);
+
         dateStartImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,
-                        dateStartListener, yearDialog, monthDialog, dayDialog);
+                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, myDateListener, yearDialog, monthDialog, dayDialog);
                 dialog.show();
 
             }
         });
+
         dateEndImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,
-                        dateEndListener, yearDialog, monthDialog, dayDialog);
+                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, myDateListener1, yearDialog, monthDialog, dayDialog);
                 dialog.show();
             }
         });
+
+
         dialogBuilder.setTitle("Register cycle");
         dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
@@ -765,8 +740,11 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<TimeTable> timeTableList = null;
                 DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
                 if (dateStartTv.getText().equals("") || dateEndTv.getText().equals("")) {
-                    mMessager.editTimeTableMessager(mEditTimeTableController,
-                            EditTimeTableController.DROP_STATE_ADD_NEW_ITEM, lesson, finall);
+                    Message message = new Message();
+                    message.what = EditTimeTableController.DROP_STATE_ADD_NEW_ITEM;
+                    message.obj = lesson;
+                    message.arg1 = finall;
+                    mEditTimeTableController.sendMessage(message);
                 } else {
                     String startDate = dateStartTv.getText().toString();
                     String endDate = dateEndTv.getText().toString();
@@ -785,7 +763,7 @@ public class MainActivity extends AppCompatActivity {
                             if (fromWeek < toWeek) {
                                 timeTableList = new ArrayList<>();
                                 for (int i = fromWeek; i <= toWeek; i++) {
-                                    Logger.d(TAG, "onClick: for " + i);
+                                    Log.d(TAG, "onClick: for " + i);
                                     timeTableList.add(new TimeTable(lesson.getName(), i, fromYear, finall));
                                 }
                             } else {
@@ -803,9 +781,13 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(MainActivity.this, "nhap sai roi may", Toast.LENGTH_SHORT).show();
                         }
-                        mMessager.editTimeTableMessager(mEditTimeTableController,
-                                EditTimeTableController.DROP_STATE_ADD_NEW_ITEM, timeTableList);
-                        Logger.d(TAG, "onClickDialog: " + timeTableList.get(1).getWeek());
+                        Message message = new Message();
+                        message.what = EditTimeTableController.DROP_STATE_ADD_NEW_ITEM;
+                        message.obj = timeTableList;
+                        mEditTimeTableController.sendMessage(message);
+                        Log.d(TAG, "onClickDialog: " + timeTableList.get(1).getWeek());
+
+
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -816,6 +798,66 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog b = dialogBuilder.create();
         b.show();
     }
+
+    private DatePickerDialog.OnDateSetListener myDateListener = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      int arg1, int arg2, int arg3) {
+
+                    dateStartTv.setText(new StringBuilder().append(arg1).append("/")
+                            .append(arg2 + 1).append("/").append(arg3));
+                }
+            };
+    private DatePickerDialog.OnDateSetListener myDateListener1 = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      int arg1, int arg2, int arg3) {
+
+                    dateEndTv.setText(new StringBuilder().append(arg1).append("/")
+                            .append(arg2 + 1).append("/").append(arg3));
+                }
+            };
+
+    private DatePickerDialog.OnDateSetListener myDateListener3 = new
+            DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker arg0,
+                                      final int arg1, int arg2, int arg3) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.set(arg1, arg2, arg3);
+                    final int week = calendar.get(Calendar.WEEK_OF_YEAR);
+
+                    if (mIsModify) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("Calendar");
+                        builder.setMessage("Bạn có muốn lưu thay đổi không?");
+                        builder.setCancelable(false);
+                        builder.setPositiveButton("Ứ chịu", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                loadDataByLabel(week, arg1);
+                            }
+                        });
+                        builder.setNegativeButton("Được", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Message message = new Message();
+                                message.what = EditTimeTableController.SAVE_DATA_STATE_SAVE_ALL_DB;
+                                mEditTimeTableController.sendMessage(message);
+                                loadDataByLabel(week, arg1);
+                            }
+                        });
+                        AlertDialog alertDialog = builder.create();
+                        alertDialog.show();
+                    } else {
+                        loadDataByLabel(week, arg1);
+                    }
+
+
+                }
+            };
 
     private void saveWeekAndYear(int week, int year) {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_WEEK_OF_YEAR, Context.MODE_PRIVATE);
@@ -848,8 +890,11 @@ public class MainActivity extends AppCompatActivity {
                 saveWeekAndYear(getWeek() + 1, getYear());
                 mTxtPeriod.setText(getWeek() + "");
             }
-            mMessager.editTimeTableMessager(mEditTimeTableController,
-                    EditTimeTableController.LOAD_DATA_STATE, OBJ_LOAD_DATA_TIME_TABLE);
+
+            Message message = new Message();
+            message.what = EditTimeTableController.LOAD_DATA_STATE;
+            message.obj = OBJ_LOAD_DATA_TIME_TABLE;
+            mEditTimeTableController.sendMessage(message);
         }
     }
 
@@ -865,16 +910,21 @@ public class MainActivity extends AppCompatActivity {
             saveWeekAndYear(maxWeek, getYear() - 1);
             mTxtPeriod.setText(getWeek());
         }
-        mMessager.editTimeTableMessager(mEditTimeTableController,
-                EditTimeTableController.LOAD_DATA_STATE, OBJ_LOAD_DATA_TIME_TABLE);
+
+        Message message = new Message();
+        message.what = EditTimeTableController.LOAD_DATA_STATE;
+        message.obj = OBJ_LOAD_DATA_TIME_TABLE;
+        mEditTimeTableController.sendMessage(message);
     }
 
     private void loadDataByLabel(int week, int year) {
         saveWeekAndYear(week, year);
         mTxtPeriod.setText(getWeek() + "");
 
-        mMessager.editTimeTableMessager(mEditTimeTableController,
-                EditTimeTableController.LOAD_DATA_STATE, OBJ_LOAD_DATA_TIME_TABLE);
+        Message message = new Message();
+        message.what = EditTimeTableController.LOAD_DATA_STATE;
+        message.obj = OBJ_LOAD_DATA_TIME_TABLE;
+        mEditTimeTableController.sendMessage(message);
     }
 
 }
